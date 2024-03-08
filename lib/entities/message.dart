@@ -41,7 +41,7 @@ class MessageContent {
   final String sender;
   final dynamic value;
   final String timestamp;
-  final String type;
+  final String type; // type: gpt, url, etc (value will reflect the data structure)
   final Map<String, dynamic>? conversation;
 
   MessageContent({
