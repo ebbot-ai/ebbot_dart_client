@@ -1,3 +1,4 @@
+import 'package:ebbot_dart_client/valueobjects/message_type.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'message.g.dart';
@@ -41,7 +42,7 @@ class MessageContent {
   final String sender;
   final dynamic value;
   final String timestamp;
-  final String type; // type: gpt, url, etc (value will reflect the data structure)
+  final MessageType type; // type: gpt, url, etc (it will affect the data structure of value)
   final Map<String, dynamic>? conversation;
 
   MessageContent({

@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ebbot_chat",
+            "name": "ebbot_dart_client",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "ebbot_chat (profile mode)",
+            "name": "ebbot_dart_client (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "ebbot_chat (release mode)",
+            "name": "ebbot_dart_client (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

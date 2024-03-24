@@ -1,26 +1,17 @@
+import 'package:ebbot_dart_client/entities/chat_config.dart';
+import 'package:ebbot_dart_client/entities/session_init.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class EbbotHttpClient {
-  final baseUrl = "https://v2.ebbot.app/api/asyngular";
+  final apiBaseUrl = "https://v2.ebbot.app/api/asyngular";
+  final configBaseUrl = "https://ebbot-v2.storage.googleapis.com/configs";
 
-  final Map<String, String> headers = {
-    'Accept': 'application/json, text/plain, */*',
+  final Map<String, String> ebbotAPIHeaders = {
+    'Accept': 'application/json',
     'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'en-GB,en;q=0.9',
     'Content-Type': 'application/json',
-    'Origin': 'https://demo.ebbot.ai',
-    'Referer': 'https://demo.ebbot.ai/',
-    'Sec-Ch-Ua':
-        '"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"',
-    'Sec-Ch-Ua-Mobile': '?0',
-    'Sec-Ch-Ua-Platform': '"macOS"',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'cross-site',
-    'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
   };
 
   String botId;
@@ -28,14 +19,27 @@ class EbbotHttpClient {
 
   EbbotHttpClient(this.botId, this.chatId);
 
-  Future<dynamic> initEbbot() async {
-    var url = "$baseUrl/init";
-    print("URL: $url");
+  Future<SessionInit> initEbbot() async {
+    var url = "$apiBaseUrl/init";
+    print("initEbbot URL!: $url");
     var body = {"botId": botId, "chatId": chatId};
     var uri = Uri.parse(url);
     var response =
-        await http.post(uri, body: jsonEncode(body), headers: headers);
+        await http.post(uri, body: jsonEncode(body), headers: ebbotAPIHeaders);
 
-    return json.decode(response.body);
+    return SessionInit.fromJson(json.decode(response.body));
+  }
+
+  Future<ChatConfig> fetchConfig() async {
+    var url = "$configBaseUrl/$botId.json?t=${DateTime.now().millisecondsSinceEpoch}";
+    print("fetchConfig URL!: $url");
+    var uri = Uri.parse(url);
+    var response =
+        await http.get(uri, headers: {'Accept-Charset': 'utf-8'});
+
+    final decodedBody = utf8.decode(response.bodyBytes);
+    // Decode the response to a ChatStyle instance
+    final jsonResponse = json.decode(decodedBody);
+    return ChatConfig.fromJson(jsonResponse);
   }
 }
