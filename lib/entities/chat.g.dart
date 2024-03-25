@@ -27,22 +27,23 @@ Map<String, dynamic> _$ChatDataToJson(ChatData instance) => <String, dynamic>{
     };
 
 ChatContent _$ChatContentFromJson(Map<String, dynamic> json) => ChatContent(
-      id: json['id'] as String,
-      companyId: json['companyId'] as String,
-      botId: json['botId'] as String,
-      integrationType: json['integration_type'] as String,
-      status: json['status'] as String,
-      statusTimestamp: json['statusTimestamp'] as String,
-      language: json['language'] as String,
-      chatUserId: json['chatUserId'] as String,
-      name: json['name'] as String,
-      type: json['type'] as String,
-      handledBy: json['handled_by'] as String,
+      id: json['id'] as String?,
+      companyId: json['companyId'] as String?,
+      botId: json['botId'] as String?,
+      integrationType: json['integration_type'] as String?,
+      status: json['status'] as String?,
+      statusTimestamp: json['statusTimestamp'] as String?,
+      language: json['language'] as String?,
+      chatUserId: json['chatUserId'] as String?,
+      name: json['name'] as String?,
+      type: json['type'] as String?,
+      handledBy: json['handled_by'] as String?,
       agents: json['agents'] as List<dynamic>,
-      newMessages: json['new_messages'] as int,
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
-      lastMessage: json['last_message'] as String,
+      newMessages: json['new_messages'] as int?,
+      createdAt: json['createdAt'] as String?,
+      updatedAt: json['updatedAt'] as String?,
+      lastMessage: json['last_message'] as String?,
+      fullName: json['full_name'] as String?,
     );
 
 Map<String, dynamic> _$ChatContentToJson(ChatContent instance) =>
@@ -63,4 +64,5 @@ Map<String, dynamic> _$ChatContentToJson(ChatContent instance) =>
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,
       'last_message': instance.lastMessage,
+      'full_name': instance.fullName,
     };

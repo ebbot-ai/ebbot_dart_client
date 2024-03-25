@@ -60,4 +60,5 @@ const _$MessageTypeEnumMap = {
   MessageType.text: 'text',
   MessageType.rating_request: 'rating_request',
   MessageType.file: 'file',
+  MessageType.text_info: 'text_info',
 };

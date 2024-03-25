@@ -33,26 +33,28 @@ class ChatData {
 
 @JsonSerializable()
 class ChatContent {
-  final String id;
-  final String companyId;
-  final String botId;
+  final String? id;
+  final String? companyId;
+  final String? botId;
   @JsonKey(name: 'integration_type')
-  final String integrationType;
-  final String status;
-  final String statusTimestamp;
-  final String language;
-  final String chatUserId;
-  final String name;
-  final String type;
+  final String? integrationType;
+  final String? status;
+  final String? statusTimestamp;
+  final String? language;
+  final String? chatUserId;
+  final String? name;
+  final String? type;
   @JsonKey(name: 'handled_by')
-  final String handledBy;
+  final String? handledBy;
   final List<dynamic> agents;
   @JsonKey(name: 'new_messages')
-  final int newMessages;
-  final String createdAt;
-  final String updatedAt;
+  final int? newMessages;
+  final String? createdAt;
+  final String? updatedAt;
   @JsonKey(name: 'last_message')
-  final String lastMessage;
+  final String? lastMessage;
+  @JsonKey(name: 'full_name')
+  final String? fullName;
 
   ChatContent({
     required this.id,
@@ -71,6 +73,7 @@ class ChatContent {
     required this.createdAt,
     required this.updatedAt,
     required this.lastMessage,
+    required this.fullName,
   });
 
   factory ChatContent.fromJson(Map<String, dynamic> json) =>
