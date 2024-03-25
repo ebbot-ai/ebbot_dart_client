@@ -6,5 +6,6 @@ enum MessageType {
   image,
   text, 
   rating_request,
-  file
+  file,
+  text_info
 }
