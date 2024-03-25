@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ebbot_dart_client/ebbot_chat_listener.dart';
+import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:logger/logger.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 

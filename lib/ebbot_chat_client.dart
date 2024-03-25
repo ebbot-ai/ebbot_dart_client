@@ -2,13 +2,13 @@ library ebbot_chat;
 
 import 'dart:async';
 
-import 'package:ebbot_dart_client/ebbot_chat_listener.dart';
+import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:ebbot_dart_client/entities/chat.dart';
 import 'package:ebbot_dart_client/entities/chat_config.dart';
 import 'package:ebbot_dart_client/entities/message.dart';
 import 'package:ebbot_dart_client/entities/session_init.dart';
-import 'package:ebbot_dart_client/network/asyngular_client.dart';
-import 'package:ebbot_dart_client/network/ebbot_http_client.dart';
+import 'package:ebbot_dart_client/src/network/asyngular_client.dart';
+import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
 import 'package:ebbot_dart_client/valueobjects/message_type.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
