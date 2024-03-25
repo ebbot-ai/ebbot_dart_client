@@ -1,12 +1,13 @@
 import 'package:ebbot_dart_client/entities/chat_config.dart';
 import 'package:ebbot_dart_client/entities/session_init.dart';
+import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class EbbotHttpClient {
-  final apiBaseUrl = "https://v2.ebbot.app/api/asyngular";
-  final configBaseUrl = "https://ebbot-v2.storage.googleapis.com/configs";
+  final String apiBaseUrl = "https://v2.ebbot.app/api/asyngular";
+  final String configBaseUrl = "https://ebbot-v2.storage.googleapis.com/configs";
 
   final Map<String, String> ebbotAPIHeaders = {
     'Accept': 'application/json',
@@ -14,32 +15,35 @@ class EbbotHttpClient {
     'Content-Type': 'application/json',
   };
 
+  final Logger logger = Logger(printer: PrettyPrinter());
+
   String botId;
   String chatId;
 
   EbbotHttpClient(this.botId, this.chatId);
 
-  Future<SessionInit> initEbbot() async {
-    var url = "$apiBaseUrl/init";
-    print("initEbbot URL!: $url");
-    var body = {"botId": botId, "chatId": chatId};
-    var uri = Uri.parse(url);
-    var response =
-        await http.post(uri, body: jsonEncode(body), headers: ebbotAPIHeaders);
-
-    return SessionInit.fromJson(json.decode(response.body));
+  Future<SessionInit> initSession() async {
+    try {
+      final url = Uri.parse("$apiBaseUrl/init");
+      final body = jsonEncode({"botId": botId, "chatId": chatId});
+      final response = await http.post(url, body: body, headers: ebbotAPIHeaders);
+      return SessionInit.fromJson(json.decode(response.body));
+    } catch (e) {
+      logger.e("Error initializing session: $e");
+      rethrow;
+    }
   }
 
   Future<ChatConfig> fetchConfig() async {
-    var url = "$configBaseUrl/$botId.json?t=${DateTime.now().millisecondsSinceEpoch}";
-    print("fetchConfig URL!: $url");
-    var uri = Uri.parse(url);
-    var response =
-        await http.get(uri, headers: {'Accept-Charset': 'utf-8'});
-
-    final decodedBody = utf8.decode(response.bodyBytes);
-    // Decode the response to a ChatStyle instance
-    final jsonResponse = json.decode(decodedBody);
-    return ChatConfig.fromJson(jsonResponse);
+    try {
+      final url = Uri.parse("$configBaseUrl/$botId.json?t=${DateTime.now().millisecondsSinceEpoch}");
+      final response = await http.get(url, headers: {'Accept-Charset': 'utf-8'});
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final jsonResponse = json.decode(decodedBody);
+      return ChatConfig.fromJson(jsonResponse);
+    } catch (e) {
+      logger.e("Error fetching config: $e");
+      rethrow;
+    }
   }
 }

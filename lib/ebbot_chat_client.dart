@@ -7,18 +7,18 @@ import 'package:ebbot_dart_client/entities/chat.dart';
 import 'package:ebbot_dart_client/entities/chat_config.dart';
 import 'package:ebbot_dart_client/entities/message.dart';
 import 'package:ebbot_dart_client/entities/session_init.dart';
+import 'package:ebbot_dart_client/network/asyngular_client.dart';
 import 'package:ebbot_dart_client/network/ebbot_http_client.dart';
 import 'package:ebbot_dart_client/valueobjects/message_type.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
-import 'package:socketcluster_client/socketcluster_client.dart';
 
 class EbbotDartClient {
   final logger = Logger(
     printer: PrettyPrinter(),
   );
 
-  late Socket socket;
+  //late Socket socket;
 
   final String botId;
   final String chatId = "${DateTime.now().millisecondsSinceEpoch}-${Uuid().v4()}";
@@ -29,11 +29,15 @@ class EbbotDartClient {
   Stream<Message> get messageStream => _messageStreamController.stream;
   Stream<Chat> get chatStream => _chatStreamController.stream;
 
-  late EbbotChatListener listener;
+  late EbbotChatListener _listener;
   late EbbotHttpClient _ebbotHttpClient;
 
   late ChatConfig _chatConfig;
   late SessionInit _chatInitConfig;
+  late AsyngularClient _asyngularClient;
+
+  EbbotChatListener get listener => _listener;
+
 
   EbbotDartClient(this.botId);
 
@@ -41,7 +45,7 @@ class EbbotDartClient {
     logger.i("initialize");
     
     _ebbotHttpClient = EbbotHttpClient(botId, chatId);
-    _chatInitConfig = await _ebbotHttpClient.initEbbot();
+    _chatInitConfig = await _ebbotHttpClient.initSession();
     _chatConfig = await _ebbotHttpClient.fetchConfig();
 
     logger.i("initialization result:$_chatInitConfig");
@@ -50,12 +54,11 @@ class EbbotDartClient {
     final data = _chatInitConfig.data;
     final session = data.session;
 
-    listener = EbbotChatListener(
+    _listener = EbbotChatListener(
         _chatInitConfig, _messageStreamController, _chatStreamController);
 
-    socket = await Socket.connect(
-        'wss://v2.ebbot.app/api/asyngular/?botId=${session.botId}&chatId=${session.chatId}&token=${data.token}',
-        listener: listener);
+    _asyngularClient = AsyngularClient(session.botId, session.chatId, data.token, _listener);
+    await _asyngularClient.initalize();
 
     await _onSubscribed(); // Wait until we have subscribed
   }
@@ -70,6 +73,7 @@ class EbbotDartClient {
         continue;
       }
 
+      // This is somewhat a hack to emulate that the bot is in fact sending a message
       logger.i("dispatching answer: ${answer.value}");
       var message = Message(
         type: "gpt",
@@ -99,15 +103,13 @@ class EbbotDartClient {
   }
 
   void dispose() {
-    // TODO :We should probably close the socket here
-    // We need to implement support for it in the Socket lib
     logger.i("Disposing of chat client socket");
 
-    if (socket != null) {
+    /*if (socket != null) {
       logger.i("Socket has been initialized, closing it");
       socket.unsubscribe("request.chat");
       socket.closeWebsocket();
-    }
+    }*/
     logger.i("Disposing of chat client streams");
     _chatStreamController.close();
     _messageStreamController.close();
@@ -133,7 +135,7 @@ class EbbotDartClient {
       "id": id,
       "event": "request.chat"
     };
-    listener.subscribe?.emit("request.chat", publishdata);
+    _listener.subscribe?.emit("request.chat", publishdata);
     //socket.emit("request.chat", publishdata);
   }
 
@@ -142,7 +144,7 @@ class EbbotDartClient {
 
     Timer.periodic(const Duration(seconds: 1), (timer) {
       logger.i("Checking if we have subscribed");
-      if (listener.subscribe != null) {
+      if (_listener.subscribe != null) {
         logger.i("We have subscribed");
         timer.cancel();
         completer.complete();

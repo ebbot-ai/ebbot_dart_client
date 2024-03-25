@@ -5,7 +5,6 @@ enum MessageType {
   typing,
   image,
   text, 
-  @JsonValue('rating_request')
-  ratingRequest,
+  rating_request,
   file
 }

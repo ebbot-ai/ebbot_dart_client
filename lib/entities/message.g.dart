@@ -58,6 +58,6 @@ const _$MessageTypeEnumMap = {
   MessageType.typing: 'typing',
   MessageType.image: 'image',
   MessageType.text: 'text',
-  MessageType.ratingRequest: 'ratingRequest',
+  MessageType.rating_request: 'rating_request',
   MessageType.file: 'file',
 };
