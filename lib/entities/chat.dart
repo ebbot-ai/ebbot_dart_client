@@ -4,9 +4,9 @@ part 'chat.g.dart';
 
 @JsonSerializable()
 class Chat {
-  final String type;
-  final ChatData data;
-  final String requestId;
+  final String? type;
+  final ChatData? data;
+  final String? requestId;
 
   Chat({
     required this.type,
@@ -21,7 +21,7 @@ class Chat {
 
 @JsonSerializable()
 class ChatData {
-  final ChatContent chat;
+  final ChatContent? chat;
 
   ChatData({required this.chat});
 
