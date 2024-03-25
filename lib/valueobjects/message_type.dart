@@ -4,8 +4,10 @@ enum MessageType {
   gpt,
   typing,
   image,
-  text, 
+  text,
   rating_request,
   file,
-  text_info
+  text_info,
+  url_click,
+  scenario
 }

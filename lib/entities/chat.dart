@@ -46,7 +46,7 @@ class ChatContent {
   final String? type;
   @JsonKey(name: 'handled_by')
   final String? handledBy;
-  final List<dynamic> agents;
+  final List<dynamic>? agents;
   @JsonKey(name: 'new_messages')
   final int? newMessages;
   final String? createdAt;

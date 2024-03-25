@@ -38,7 +38,7 @@ ChatContent _$ChatContentFromJson(Map<String, dynamic> json) => ChatContent(
       name: json['name'] as String?,
       type: json['type'] as String?,
       handledBy: json['handled_by'] as String?,
-      agents: json['agents'] as List<dynamic>,
+      agents: json['agents'] as List<dynamic>?,
       newMessages: json['new_messages'] as int?,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
