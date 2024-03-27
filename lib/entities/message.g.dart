@@ -36,7 +36,7 @@ MessageContent _$MessageContentFromJson(Map<String, dynamic> json) =>
       sender: json['sender'] as String,
       value: json['value'],
       timestamp: json['timestamp'] as String,
-      type: $enumDecode(_$MessageTypeEnumMap, json['type']),
+      type: json['type'] as String,
       conversation: json['conversation'] as Map<String, dynamic>?,
     );
 
@@ -49,18 +49,6 @@ Map<String, dynamic> _$MessageContentToJson(MessageContent instance) =>
       'sender': instance.sender,
       'value': instance.value,
       'timestamp': instance.timestamp,
-      'type': _$MessageTypeEnumMap[instance.type]!,
+      'type': instance.type,
       'conversation': instance.conversation,
     };
-
-const _$MessageTypeEnumMap = {
-  MessageType.gpt: 'gpt',
-  MessageType.typing: 'typing',
-  MessageType.image: 'image',
-  MessageType.text: 'text',
-  MessageType.rating_request: 'rating_request',
-  MessageType.file: 'file',
-  MessageType.text_info: 'text_info',
-  MessageType.url_click: 'url_click',
-  MessageType.scenario: 'scenario',
-};

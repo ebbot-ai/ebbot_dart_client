@@ -21,7 +21,8 @@ class EbbotDartClient {
   //late Socket socket;
 
   final String botId;
-  final String chatId = "${DateTime.now().millisecondsSinceEpoch}-${Uuid().v4()}";
+  final String chatId =
+      "${DateTime.now().millisecondsSinceEpoch}-${Uuid().v4()}";
 
   final _chatStreamController = StreamController<Chat>.broadcast();
   final _messageStreamController = StreamController<Message>.broadcast();
@@ -38,12 +39,11 @@ class EbbotDartClient {
 
   EbbotChatListener get listener => _listener;
 
-
   EbbotDartClient(this.botId);
 
   Future<void> initialize() async {
     logger.i("initialize");
-    
+
     _ebbotHttpClient = EbbotHttpClient(botId, chatId);
     _chatInitConfig = await _ebbotHttpClient.initSession();
     _chatConfig = await _ebbotHttpClient.fetchConfig();
@@ -57,16 +57,17 @@ class EbbotDartClient {
     _listener = EbbotChatListener(
         _chatInitConfig, _messageStreamController, _chatStreamController);
 
-    _asyngularClient = AsyngularClient(session.botId, session.chatId, data.token, _listener);
+    _asyngularClient =
+        AsyngularClient(session.botId, session.chatId, data.token, _listener);
     await _asyngularClient.initalize();
 
     await _onSubscribed(); // Wait until we have subscribed
   }
-  
+
   void startReceive() {
     // Dispatch any scenarios as a message from the chatbot
     var answers = _chatConfig.scenario.answers;
-    
+
     for (var answer in answers) {
       if (answer.type != "text") {
         logger.i("skipping answer of type: ${answer.type}");
@@ -86,7 +87,7 @@ class EbbotDartClient {
             sender: "bot",
             value: answer.value,
             timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-            type: MessageType.gpt,
+            type: 'gpt',
           ),
         ),
         requestId: Uuid().v4(),
