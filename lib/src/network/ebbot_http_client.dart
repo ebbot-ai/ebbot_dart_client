@@ -1,5 +1,5 @@
-import 'package:ebbot_dart_client/entities/chat_config.dart';
-import 'package:ebbot_dart_client/entities/session_init.dart';
+import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
