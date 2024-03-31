@@ -3,22 +3,21 @@ import 'package:json_annotation/json_annotation.dart';
 part 'session_init.g.dart';
 
 @JsonSerializable()
-class SessionInit {
+class HttpSession {
   final SessionData data;
   final bool existing;
   final bool success;
 
-  SessionInit({
+  HttpSession({
     required this.data,
     required this.existing,
     required this.success,
   });
 
-  factory SessionInit.fromJson(Map<String, dynamic> json) =>
+  factory HttpSession.fromJson(Map<String, dynamic> json) =>
       _$SessionInitFromJson(json);
 
   Map<String, dynamic> toJson() => _$SessionInitToJson(this);
-
 }
 
 @JsonSerializable()

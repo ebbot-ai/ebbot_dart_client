@@ -12,7 +12,7 @@ class EbbotChatListener extends BasicListener {
     printer: PrettyPrinter(),
   );
 
-  final SessionInit _initResult;
+  final HttpSession _initResult;
   final StreamController<Message> _messageStreamController;
   final StreamController<Chat> _chatStreamController;
 
@@ -23,8 +23,8 @@ class EbbotChatListener extends BasicListener {
   Stream<Message> get messageStream => _messageStreamController.stream;
   Stream<Chat> get chatStream => _chatStreamController.stream;
 
-  EbbotChatListener(
-      this._initResult, this._messageStreamController, this._chatStreamController);
+  EbbotChatListener(this._initResult, this._messageStreamController,
+      this._chatStreamController);
 
   void _onChatCreated(Chat chat) {
     _chatStreamController.add(chat);
@@ -82,7 +82,6 @@ class EbbotChatListener extends BasicListener {
 
     // Subscribed!
     logger.i("Subscribed!!!");
-
   }
 
   @override
