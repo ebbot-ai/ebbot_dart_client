@@ -1,4 +1,4 @@
-class EnvironmentConfig {
+class EnvironmentConfigurationConfig {
   static const String ovhEUProduction =
       'https://storage.gra.cloud.ovh.net/v1/AUTH_fc1ba5ae6eb64e10a8c0b2499d0e8ca9/production/configs/';
   static const String googleEUProduction =

@@ -1,4 +1,4 @@
-import 'package:ebbot_dart_client/configuration/environment_config.dart';
+import 'package:ebbot_dart_client/configuration/environment_configuration_config.dart';
 
 class Configuration {
   final Environment

@@ -8,10 +8,12 @@ import 'package:ebbot_dart_client/entities/chat/chat.dart';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/entities/message/message.dart';
 import 'package:ebbot_dart_client/entities/session/session_init.dart';
-import 'package:ebbot_dart_client/src/network/asyngular_client.dart';
+import 'package:ebbot_dart_client/src/network/asyngular_http_client.dart';
+import 'package:ebbot_dart_client/src/network/asyngular_websocket_client.dart';
 import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
 import 'package:ebbot_dart_client/valueobjects/message_type.dart';
 import 'package:logger/logger.dart';
+import 'package:socketcluster_client/socketcluster_client.dart';
 import 'package:uuid/uuid.dart';
 
 class EbbotDartClient {
@@ -28,19 +30,18 @@ class EbbotDartClient {
   String get chatId => _chatId;
 
   final _chatStreamController = StreamController<Chat>.broadcast();
-  final _messageStreamController = StreamController<Message>.broadcast();
-
   Stream<Message> get messageStream => _messageStreamController.stream;
+  final _messageStreamController = StreamController<Message>.broadcast();
   Stream<Chat> get chatStream => _chatStreamController.stream;
 
-  late EbbotChatListener _listener;
   late EbbotHttpClient _ebbotHttpClient;
   late HttpSession _httpSession;
-
+  late Socket _socket;
   late ChatConfig _chatConfig;
-  //late SessionInit _chatInitConfig;
-  late AsyngularClient _asyngularClient;
+  late AsyngularHttpClient _asyngularHttpClient;
+  late AsyngularWebsocketClient _asyngularWebsocketClient;
 
+  late EbbotChatListener _listener;
   EbbotChatListener get listener => _listener;
 
   EbbotDartClient(this._botId, this._configuration);
@@ -52,19 +53,17 @@ class EbbotDartClient {
     _chatConfig =
         await _ebbotHttpClient.fetchConfig(_configuration.environment);
 
-    //logger.i("initialization result:$_chatInitConfig");
     logger.i("Config result:$_chatConfig");
 
-    //final data = _chatInitConfig.data;
-    //final session = data.session;
+    _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId);
 
-    _asyngularClient = AsyngularClient(this._botId, this._chatId);
-
-    _httpSession = await _asyngularClient.initHTTPSession();
+    _httpSession = await _asyngularHttpClient.init();
     _listener = EbbotChatListener(
         _httpSession, _messageStreamController, _chatStreamController);
 
-    await _asyngularClient.initWebsocket(_listener);
+    _asyngularWebsocketClient = AsyngularWebsocketClient(_botId, _chatId);
+
+    _socket = await _asyngularWebsocketClient.init(_httpSession, _listener);
 
     await _onSubscribed(); // Wait until we have subscribed
   }
@@ -82,7 +81,7 @@ class EbbotDartClient {
       // This is somewhat a hack to emulate that the bot is in fact sending a message
       logger.i("dispatching answer: ${answer.value}");
       var message = Message(
-        type: "gpt",
+        type: "answer",
         data: MessageData(
           message: MessageContent(
             id: Uuid().v4(),
@@ -92,7 +91,7 @@ class EbbotDartClient {
             sender: "bot",
             value: answer.value,
             timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-            type: 'gpt',
+            type: 'answer',
           ),
         ),
         requestId: Uuid().v4(),
@@ -121,14 +120,14 @@ class EbbotDartClient {
     _messageStreamController.close();
   }
 
-  void sendMessage(String message) {
+  void sendTextMessage(String message) {
     var id = Uuid().v4();
     var publishdata = {
       "clientId": _botId,
       "conversation": {"user_last_input": message},
       "data": {
         "id": id,
-        "full_name": "Test Testsson",
+        "full_name": "Test Testsson", // TODO: Use real name
         "chatId": _chatId,
         "finished": true,
         "pending": false,
@@ -141,8 +140,79 @@ class EbbotDartClient {
       "id": id,
       "event": "request.chat"
     };
+    logger.i("Sending text message with message: $message");
     _listener.subscribe?.emit("request.chat", publishdata);
-    //socket.emit("request.chat", publishdata);
+  }
+
+  void sendUrlMessage(String url) {
+    var id = Uuid().v4();
+    var publishdata = {
+      "clientId": _botId,
+      "conversation": {"user_last_input": url},
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "sender": "user",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "type": "url_click",
+        "username": _chatId,
+        "value": url,
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+    logger.i("Sending url message with url: $url");
+    _listener.subscribe?.emit("request.chat", publishdata);
+  }
+
+  void sendScenarioMessage(String scenario) {
+    var id = Uuid().v4();
+    var publishdata = {
+      "clientId": _botId,
+      "conversation": {"user_last_input": scenario},
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "sender": "user",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "type": "scenario",
+        "username": _chatId,
+        "value": {"scenario": scenario},
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+    logger.i("Sending scenario message with scenario: $scenario");
+    _listener.subscribe?.emit("request.chat", publishdata);
+  }
+
+  void sendVariableMessage(String name, String value) {
+    var id = Uuid().v4();
+    var publishdata = {
+      "clientId": _botId,
+      "conversation": {
+        "user_last_input": {"name": name, "value": value}
+      },
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "sender": "user",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "type": "variable",
+        "username": _chatId,
+        "value": {"name": name, "value": value},
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+    logger.i("Sending variable message with name: $name and value: $value");
+    _listener.subscribe?.emit("request.chat", publishdata);
   }
 
   Future<void> _onSubscribed() async {

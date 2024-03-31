@@ -1,4 +1,4 @@
-import 'package:ebbot_dart_client/configuration/environment_config.dart';
+import 'package:ebbot_dart_client/configuration/environment_configuration_config.dart';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:logger/logger.dart';
@@ -23,7 +23,7 @@ class EbbotHttpClient {
   EbbotHttpClient(this.botId, this.chatId);
 
   Future<ChatConfig> fetchConfig(Environment env) async {
-    var configBaseUrl = EnvironmentConfig.getConfigUrl(env);
+    var configBaseUrl = EnvironmentConfigurationConfig.getConfigUrl(env);
     final uri = Uri.parse(
         "$configBaseUrl$botId.json?t=${DateTime.now().millisecondsSinceEpoch}");
     logger.i("Fetching config from environment $env and uri $uri");
