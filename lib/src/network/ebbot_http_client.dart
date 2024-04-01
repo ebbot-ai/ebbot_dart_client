@@ -1,8 +1,6 @@
 import 'package:ebbot_dart_client/configuration/environment_configuration_config.dart';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
-import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:logger/logger.dart';
-import 'package:uuid/uuid.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 

@@ -4,7 +4,6 @@ import 'package:ebbot_dart_client/entities/chat/chat.dart';
 import 'package:ebbot_dart_client/entities/message/message.dart';
 import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
-import 'package:uuid/uuid.dart';
 import 'package:logger/logger.dart';
 
 class EbbotChatListener extends BasicListener {

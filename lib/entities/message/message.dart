@@ -1,4 +1,3 @@
-import 'package:ebbot_dart_client/valueobjects/message_type.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'message.g.dart';

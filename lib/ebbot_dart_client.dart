@@ -11,7 +11,6 @@ import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_http_client.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_websocket_client.dart';
 import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
-import 'package:ebbot_dart_client/valueobjects/message_type.dart';
 import 'package:logger/logger.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 import 'package:uuid/uuid.dart';
@@ -26,7 +25,7 @@ class EbbotDartClient {
   final String _botId;
   final Configuration _configuration;
   final String _chatId =
-      "${DateTime.now().millisecondsSinceEpoch}-${Uuid().v4()}";
+      "${DateTime.now().millisecondsSinceEpoch}-${const Uuid().v4()}";
   String get chatId => _chatId;
 
   final _chatStreamController = StreamController<Chat>.broadcast();
@@ -36,6 +35,7 @@ class EbbotDartClient {
 
   late EbbotHttpClient _ebbotHttpClient;
   late HttpSession _httpSession;
+  // ignore: unused_field
   late Socket _socket;
   late ChatConfig _chatConfig;
   late AsyngularHttpClient _asyngularHttpClient;
@@ -84,7 +84,7 @@ class EbbotDartClient {
         type: "answer",
         data: MessageData(
           message: MessageContent(
-            id: Uuid().v4(),
+            id: const Uuid().v4(),
             botId: _botId,
             chatId: _chatId,
             companyId: _botId,
@@ -94,7 +94,7 @@ class EbbotDartClient {
             type: 'answer',
           ),
         ),
-        requestId: Uuid().v4(),
+        requestId: const Uuid().v4(),
       );
 
       // check if stream is closed before adding message
@@ -121,7 +121,7 @@ class EbbotDartClient {
   }
 
   void sendTextMessage(String message) {
-    var id = Uuid().v4();
+    var id = const Uuid().v4();
     var publishdata = {
       "clientId": _botId,
       "conversation": {"user_last_input": message},
@@ -145,7 +145,7 @@ class EbbotDartClient {
   }
 
   void sendUrlMessage(String url) {
-    var id = Uuid().v4();
+    var id = const Uuid().v4();
     var publishdata = {
       "clientId": _botId,
       "conversation": {"user_last_input": url},
@@ -168,7 +168,7 @@ class EbbotDartClient {
   }
 
   void sendScenarioMessage(String scenario) {
-    var id = Uuid().v4();
+    var id = const Uuid().v4();
     var publishdata = {
       "clientId": _botId,
       "conversation": {"user_last_input": scenario},
@@ -191,7 +191,7 @@ class EbbotDartClient {
   }
 
   void sendVariableMessage(String name, String value) {
-    var id = Uuid().v4();
+    var id = const Uuid().v4();
     var publishdata = {
       "clientId": _botId,
       "conversation": {
