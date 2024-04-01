@@ -27,6 +27,8 @@ class ChatConfig {
 
   factory ChatConfig.fromJson(Map<String, dynamic> json) =>
       _$ChatConfigFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChatConfigToJson(this);
 }
 
 @JsonSerializable()
@@ -34,7 +36,7 @@ class ChatStyle {
   final String version;
   final ChatStyleV1 v1;
   final ChatStyleV2 v2;
-  
+
   ChatStyle({
     required this.version,
     required this.v1,

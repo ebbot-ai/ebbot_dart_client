@@ -1,3 +1,4 @@
+// ignore_for_file: constant_identifier_names
 
 // MessageType enum is used to define the type of message
 // For now, this isn't used, as non-existent types will cause a runtime error
