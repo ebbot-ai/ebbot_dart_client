@@ -11,6 +11,8 @@ import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_http_client.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_websocket_client.dart';
 import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
+import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as Http;
 import 'package:logger/logger.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 import 'package:uuid/uuid.dart';
@@ -49,7 +51,11 @@ class EbbotDartClient {
   Future<void> initialize() async {
     logger.i("initialize");
 
-    _ebbotHttpClient = EbbotHttpClient(_botId, _chatId);
+    // Register dependencies
+    initializeDependencies();
+
+    // Initialize the client
+    _ebbotHttpClient = EbbotHttpClient(botId: _botId, chatId: _chatId);
     _chatConfig =
         await _ebbotHttpClient.fetchConfig(_configuration.environment);
 
@@ -66,6 +72,10 @@ class EbbotDartClient {
     _socket = await _asyngularWebsocketClient.init(_httpSession, _listener);
 
     await _onSubscribed(); // Wait until we have subscribed
+  }
+
+  void initializeDependencies() {
+    GetIt.I.registerSingleton<Http.Client>(Http.Client());
   }
 
   void startReceive() {
