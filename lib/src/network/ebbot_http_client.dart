@@ -31,9 +31,11 @@ class EbbotHttpClient {
     if (config != null) {
       return config;
     }
-    
+
     // Then try to fetch the config for all the other environments
-    for (var host in EnvironmentConfigurationConfig.baseUrls.keys) {
+    var hosts = EnvironmentConfigurationConfig.baseUrls.keys
+        .where((configEnv) => configEnv != env);
+    for (var host in hosts) {
       var config = await _fetchConfig(host);
       if (config != null) {
         return config;
