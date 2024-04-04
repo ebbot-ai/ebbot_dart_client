@@ -1,7 +1,6 @@
 import 'package:ebbot_dart_client/configuration/environment_configuration_config.dart';
 import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -23,7 +22,6 @@ void main() {
     test('fetchConfig returns ChatConfig for valid environment', () async {
       // Mock the HTTP response for a successful request
 
-      
       final config = httpClient.fetchConfig(Environment.ovhEUProduction);
 
       httpClient._fetchConfig = (env) async {

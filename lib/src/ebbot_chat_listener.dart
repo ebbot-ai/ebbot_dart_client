@@ -79,7 +79,7 @@ class EbbotChatListener extends BasicListener {
     });
 
     // Subscribed!
-    logger.i("Subscribed!!!");
+    logger.i("Subscribed!!");
   }
 
   @override

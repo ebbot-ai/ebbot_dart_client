@@ -54,13 +54,14 @@ class EbbotDartClient {
     // Register dependencies
     initializeDependencies();
 
-    // Initialize the client
+    // Initialize the http client
     _ebbotHttpClient = EbbotHttpClient(botId: _botId, chatId: _chatId);
     _chatConfig =
         await _ebbotHttpClient.fetchConfig(_configuration.environment);
 
     logger.i("Config result:$_chatConfig");
 
+    // Initalize the asyngular client
     _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId);
 
     _httpSession = await _asyngularHttpClient.init();
@@ -151,6 +152,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending text message with message: $message");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
@@ -174,6 +179,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending url message with url: $url");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
@@ -197,6 +206,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending scenario message with scenario: $scenario");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
@@ -222,6 +235,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending variable message with name: $name and value: $value");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 

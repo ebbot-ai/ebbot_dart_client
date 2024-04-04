@@ -24,6 +24,7 @@ class AsyngularWebsocketClient {
     try {
       final url = Uri.parse(
           "$asyngularWSBaseUrl/?botId=$_botId&chatId=$_chatId&token=${httpSession.data.token}");
+      logger.i("connecting to $url");
       _socket = await Socket.connect(url.toString(), listener: _listener);
       return _socket;
     } catch (e) {
