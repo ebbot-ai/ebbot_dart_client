@@ -496,7 +496,7 @@ class Scenario {
 @JsonSerializable()
 class Answers {
   final String type;
-  final String value;
+  final dynamic value;
 
   Answers({
     required this.type,

@@ -15,9 +15,9 @@ class HttpSession {
   });
 
   factory HttpSession.fromJson(Map<String, dynamic> json) =>
-      _$SessionInitFromJson(json);
+      _$HttpSessionFromJson(json);
 
-  Map<String, dynamic> toJson() => _$SessionInitToJson(this);
+  Map<String, dynamic> toJson() => _$HttpSessionToJson(this);
 }
 
 @JsonSerializable()

@@ -11,6 +11,8 @@ import 'package:ebbot_dart_client/entities/session/session_init.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_http_client.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_websocket_client.dart';
 import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
+import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as Http;
 import 'package:logger/logger.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 import 'package:uuid/uuid.dart';
@@ -49,23 +51,35 @@ class EbbotDartClient {
   Future<void> initialize() async {
     logger.i("initialize");
 
-    _ebbotHttpClient = EbbotHttpClient(_botId, _chatId);
-    _chatConfig =
-        await _ebbotHttpClient.fetchConfig(_configuration.environment);
+    // Register dependencies
+    initializeDependencies();
+
+    // Initialize the http client
+    _ebbotHttpClient = EbbotHttpClient(
+        botId: _botId, chatId: _chatId, env: _configuration.environment);
+    _chatConfig = await _ebbotHttpClient.fetchConfig();
 
     logger.i("Config result:$_chatConfig");
 
-    _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId);
+    // Initalize the asyngular client
+    _asyngularHttpClient =
+        AsyngularHttpClient(_botId, _chatId, _configuration.environment);
 
-    _httpSession = await _asyngularHttpClient.init();
+    _httpSession = await _asyngularHttpClient.initSession();
     _listener = EbbotChatListener(
         _httpSession, _messageStreamController, _chatStreamController);
 
-    _asyngularWebsocketClient = AsyngularWebsocketClient(_botId, _chatId);
+    _asyngularWebsocketClient =
+        AsyngularWebsocketClient(_botId, _chatId, _configuration.environment);
 
-    _socket = await _asyngularWebsocketClient.init(_httpSession, _listener);
+    _socket =
+        await _asyngularWebsocketClient.initSocket(_httpSession, _listener);
 
     await _onSubscribed(); // Wait until we have subscribed
+  }
+
+  void initializeDependencies() {
+    GetIt.I.registerSingleton<Http.Client>(Http.Client());
   }
 
   void startReceive() {
@@ -73,15 +87,15 @@ class EbbotDartClient {
     var answers = _chatConfig.scenario.answers;
 
     for (var answer in answers) {
-      if (answer.type != "text") {
+      /*if (answer.type != "text") {
         logger.i("skipping answer of type: ${answer.type}");
         continue;
-      }
+      }*/
 
       // This is somewhat a hack to emulate that the bot is in fact sending a message
       logger.i("dispatching answer: ${answer.value}");
       var message = Message(
-        type: "answer",
+        type: answer.type, //"answer",
         data: MessageData(
           message: MessageContent(
             id: const Uuid().v4(),
@@ -91,7 +105,7 @@ class EbbotDartClient {
             sender: "bot",
             value: answer.value,
             timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-            type: 'answer',
+            type: answer.type,
           ),
         ),
         requestId: const Uuid().v4(),
@@ -130,7 +144,7 @@ class EbbotDartClient {
         "full_name": "Test Testsson", // TODO: Use real name
         "chatId": _chatId,
         "finished": true,
-        "pending": false,
+        "pending": true,
         "sender": "user",
         "timestamp": DateTime.now().millisecondsSinceEpoch,
         "type": "text",
@@ -141,6 +155,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending text message with message: $message");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
@@ -164,6 +182,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending url message with url: $url");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
@@ -187,6 +209,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending scenario message with scenario: $scenario");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
@@ -212,6 +238,10 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending variable message with name: $name and value: $value");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
