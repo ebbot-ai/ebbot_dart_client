@@ -53,7 +53,8 @@ class EbbotChatListener extends BasicListener {
     subscribe = socket.subscribe(subscriptionId);
 
     subscribe?.onSubscribe(subscriptionId, (name, data) {
-      logger.i("subscribe.onSubscribe:: subscription ID: $name");
+      logger.i(
+          "subscribe.onSubscribe: subscription ID: $subscriptionId name: $name data length: ${data.length}");
 
       // Deserialize the data to either Chat or Message depending on $data['type']
       // data is an array of messages or chats

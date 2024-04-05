@@ -1,35 +1,36 @@
 import 'dart:io';
 
-import 'package:ebbot_dart_client/configuration/environment_configuration_config.dart';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/service/config_resolver_service.dart';
+import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as Http;
 import 'package:logger/logger.dart';
 import 'dart:convert';
 
 class EbbotHttpClient {
-  final String apiBaseUrl = "https://v2.ebbot.app/api/asyngular";
-
   final Map<String, String> ebbotAPIHeaders = {
     'Accept': 'application/json',
     'Accept-Encoding': 'gzip, deflate, br',
     'Content-Type': 'application/json',
   };
 
-  final Logger logger = Logger(printer: PrettyPrinter());
+  final Logger logger = Logger(printer: PrettyPrinter(lineLength: 2000));
 
   String botId;
   String chatId;
+  Environment env;
   Http.Client httpClient;
 
   EbbotHttpClient({
     required this.botId,
     required this.chatId,
+    required this.env,
     Http.Client? httpClient,
   }) : httpClient = httpClient ?? Http.Client();
 
-  Future<ChatConfig> fetchConfig(Environment env) async {
-    var configBaseUrl = EnvironmentConfigurationConfig.getConfigUrl(env);
+  Future<ChatConfig> fetchConfig() async {
+    var configBaseUrl = ConfigResolverService.resolve(env);
     final uri = Uri.parse(
         "$configBaseUrl$botId.json?t=${DateTime.now().millisecondsSinceEpoch}");
     logger.i("Fetching config from environment $env and uri $uri");
@@ -40,21 +41,26 @@ class EbbotHttpClient {
       return config;
     }
 
+    logger.w(
+        "Provided environment $env does not have a config at uri $uri, using fallback mechanism");
+
     // Then try to fetch the config for all the other environments
-    var hosts = EnvironmentConfigurationConfig.baseUrls.keys
+    var hosts = ConfigResolverService.baseUrls.keys
         .where((configEnv) => configEnv != env);
     for (var host in hosts) {
       var config = await _fetchConfig(host);
       if (config != null) {
+        logger.i("Found config for env $host at uri $uri");
         return config;
       }
+      logger.w("Failed to fetch config for env $host at uri $uri, trying next");
     }
 
     throw Exception("Failed to fetch config for env $env at uri $uri");
   }
 
   Future<ChatConfig?> _fetchConfig(Environment env) async {
-    var configBaseUrl = EnvironmentConfigurationConfig.getConfigUrl(env);
+    var configBaseUrl = ConfigResolverService.resolve(env);
     final uri = Uri.parse(
         "$configBaseUrl$botId.json?t=${DateTime.now().millisecondsSinceEpoch}");
     try {
@@ -73,6 +79,7 @@ class EbbotHttpClient {
       return ChatConfig.fromJson(jsonResponse);
     } catch (e) {
       logger.e("Error fetching config for env $env at uri $uri: $e");
+
       return null;
     }
   }

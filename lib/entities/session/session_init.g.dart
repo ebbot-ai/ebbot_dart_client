@@ -6,13 +6,13 @@ part of 'session_init.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-HttpSession _$SessionInitFromJson(Map<String, dynamic> json) => HttpSession(
+HttpSession _$HttpSessionFromJson(Map<String, dynamic> json) => HttpSession(
       data: SessionData.fromJson(json['data'] as Map<String, dynamic>),
       existing: json['existing'] as bool,
       success: json['success'] as bool,
     );
 
-Map<String, dynamic> _$SessionInitToJson(HttpSession instance) =>
+Map<String, dynamic> _$HttpSessionToJson(HttpSession instance) =>
     <String, dynamic>{
       'data': instance.data,
       'existing': instance.existing,

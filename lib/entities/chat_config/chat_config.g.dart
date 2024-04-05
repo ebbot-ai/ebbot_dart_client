@@ -438,7 +438,7 @@ Map<String, dynamic> _$ScenarioToJson(Scenario instance) => <String, dynamic>{
 
 Answers _$AnswersFromJson(Map<String, dynamic> json) => Answers(
       type: json['type'] as String,
-      value: json['value'] as String,
+      value: json['value'],
     );
 
 Map<String, dynamic> _$AnswersToJson(Answers instance) => <String, dynamic>{

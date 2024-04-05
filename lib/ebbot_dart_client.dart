@@ -55,22 +55,25 @@ class EbbotDartClient {
     initializeDependencies();
 
     // Initialize the http client
-    _ebbotHttpClient = EbbotHttpClient(botId: _botId, chatId: _chatId);
-    _chatConfig =
-        await _ebbotHttpClient.fetchConfig(_configuration.environment);
+    _ebbotHttpClient = EbbotHttpClient(
+        botId: _botId, chatId: _chatId, env: _configuration.environment);
+    _chatConfig = await _ebbotHttpClient.fetchConfig();
 
     logger.i("Config result:$_chatConfig");
 
     // Initalize the asyngular client
-    _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId);
+    _asyngularHttpClient =
+        AsyngularHttpClient(_botId, _chatId, _configuration.environment);
 
-    _httpSession = await _asyngularHttpClient.init();
+    _httpSession = await _asyngularHttpClient.initSession();
     _listener = EbbotChatListener(
         _httpSession, _messageStreamController, _chatStreamController);
 
-    _asyngularWebsocketClient = AsyngularWebsocketClient(_botId, _chatId);
+    _asyngularWebsocketClient =
+        AsyngularWebsocketClient(_botId, _chatId, _configuration.environment);
 
-    _socket = await _asyngularWebsocketClient.init(_httpSession, _listener);
+    _socket =
+        await _asyngularWebsocketClient.initSocket(_httpSession, _listener);
 
     await _onSubscribed(); // Wait until we have subscribed
   }
@@ -84,15 +87,15 @@ class EbbotDartClient {
     var answers = _chatConfig.scenario.answers;
 
     for (var answer in answers) {
-      if (answer.type != "text") {
+      /*if (answer.type != "text") {
         logger.i("skipping answer of type: ${answer.type}");
         continue;
-      }
+      }*/
 
       // This is somewhat a hack to emulate that the bot is in fact sending a message
       logger.i("dispatching answer: ${answer.value}");
       var message = Message(
-        type: "answer",
+        type: answer.type, //"answer",
         data: MessageData(
           message: MessageContent(
             id: const Uuid().v4(),
@@ -102,7 +105,7 @@ class EbbotDartClient {
             sender: "bot",
             value: answer.value,
             timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-            type: 'answer',
+            type: answer.type,
           ),
         ),
         requestId: const Uuid().v4(),
@@ -141,7 +144,7 @@ class EbbotDartClient {
         "full_name": "Test Testsson", // TODO: Use real name
         "chatId": _chatId,
         "finished": true,
-        "pending": false,
+        "pending": true,
         "sender": "user",
         "timestamp": DateTime.now().millisecondsSinceEpoch,
         "type": "text",
