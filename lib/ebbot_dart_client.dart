@@ -1,6 +1,7 @@
 library ebbot_chat;
 
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:ebbot_dart_client/configuration/configuration.dart';
 import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
@@ -21,8 +22,6 @@ class EbbotDartClient {
   final logger = Logger(
     printer: PrettyPrinter(),
   );
-
-  //late Socket socket;
 
   final String _botId;
   final Configuration _configuration;
@@ -51,9 +50,6 @@ class EbbotDartClient {
   Future<void> initialize() async {
     logger.i("initialize");
 
-    // Register dependencies
-    initializeDependencies();
-
     // Initialize the http client
     _ebbotHttpClient = EbbotHttpClient(
         botId: _botId, chatId: _chatId, env: _configuration.environment);
@@ -76,10 +72,6 @@ class EbbotDartClient {
         await _asyngularWebsocketClient.initSocket(_httpSession, _listener);
 
     await _onSubscribed(); // Wait until we have subscribed
-  }
-
-  void initializeDependencies() {
-    GetIt.I.registerSingleton<Http.Client>(Http.Client());
   }
 
   void startReceive() {
@@ -121,17 +113,24 @@ class EbbotDartClient {
     }
   }
 
-  void dispose() {
+  void dispose({bool closeSocket = false}) {
     logger.i("Disposing of chat client socket");
 
-    /*if (socket != null) {
+    if (closeSocket == true) {
       logger.i("Socket has been initialized, closing it");
-      socket.unsubscribe("request.chat");
-      socket.closeWebsocket();
-    }*/
+      _socket.unsubscribe("request.chat");
+      _socket.closeWebsocket();
+    }
+
     logger.i("Disposing of chat client streams");
     _chatStreamController.close();
     _messageStreamController.close();
+  }
+
+  Future<void> restart() async {
+    logger.i("Restarting chat client");
+    dispose(closeSocket: true);
+    await initialize();
   }
 
   void sendTextMessage(String message) {

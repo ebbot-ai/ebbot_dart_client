@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/service/config_resolver_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
-import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as Http;
+import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'dart:convert';
 
@@ -20,14 +19,14 @@ class EbbotHttpClient {
   String botId;
   String chatId;
   Environment env;
-  Http.Client httpClient;
+  http.Client httpClient;
 
   EbbotHttpClient({
     required this.botId,
     required this.chatId,
     required this.env,
-    Http.Client? httpClient,
-  }) : httpClient = httpClient ?? Http.Client();
+    http.Client? httpClient,
+  }) : httpClient = httpClient ?? http.Client();
 
   Future<ChatConfig> fetchConfig() async {
     var configBaseUrl = ConfigResolverService.resolve(env);
@@ -64,10 +63,8 @@ class EbbotHttpClient {
     final uri = Uri.parse(
         "$configBaseUrl$botId.json?t=${DateTime.now().millisecondsSinceEpoch}");
     try {
-      final client = GetIt.I.get<Http.Client>();
-
       final response =
-          await client.get(uri, headers: {'Accept-Charset': 'utf-8'});
+          await http.get(uri, headers: {'Accept-Charset': 'utf-8'});
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         logger.w("Failed to fetch config for env $env at uri $uri");
