@@ -72,6 +72,11 @@ class EbbotDartClient {
         await _asyngularWebsocketClient.initSocket(_httpSession, _listener);
 
     await _onSubscribed(); // Wait until we have subscribed
+
+    // If we have any userinfo, send it to the chatbot
+    if (_configuration.userAttributes.isNotEmpty) {
+      sendUpdateConversationInfo(_configuration.userAttributes);
+    }
   }
 
   void startReceive() {
@@ -268,6 +273,36 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending variable message with name: $name and value: $value");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
+    _listener.subscribe?.emit("request.chat", publishdata);
+  }
+
+  void sendUpdateConversationInfo(Map<String, dynamic> conversationInfo) {
+    var id = const Uuid().v4();
+    var publishdata = {
+      "clientId": _botId,
+      "conversation": {
+        "user_last_input": conversationInfo,
+      },
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "stop": true,
+        "sender": "user",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "type": "update_conversation_info",
+        "username": _chatId,
+        "value": conversationInfo,
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+    logger.i("Sending conversation info update with info: $conversationInfo");
     if (_listener.subscribe == null) {
       logger.w("No subscription available, not sending message");
       return;
