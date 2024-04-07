@@ -189,6 +189,37 @@ class EbbotDartClient {
     _listener.subscribe?.emit("request.chat", publishdata);
   }
 
+  void sendRatingMessage(int rating) {
+    var id = const Uuid().v4();
+    var ratingValue = {
+      "rating": rating,
+    };
+
+    var publishdata = {
+      "clientId": _botId,
+      "conversation": {"rating": rating, "user_last_input": ratingValue},
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "sender": "user",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "type": "rating",
+        "username": _chatId,
+        "value": ratingValue,
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+    logger.i("Sending rating message with rating: $rating");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
+    _listener.subscribe?.emit("request.chat", publishdata);
+  }
+
   void sendScenarioMessage(String scenario) {
     var id = const Uuid().v4();
     var publishdata = {
