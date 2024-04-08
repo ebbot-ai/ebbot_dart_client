@@ -1,6 +1,7 @@
 name: ebbot_dart_client
 description: "A new Flutter package project."
-version: 0.0.1
+version: 0.0.2
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 homepage:
 
 environment:
@@ -11,7 +12,6 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.0
-  #socketcluster_client: ^0.3.0
   socketcluster_client:
     git:
       url: https://github.com/ebbot-ai/socketcluster_client
@@ -20,11 +20,17 @@ dependencies:
   json_annotation: ^4.8.1
   json_serializable: ^6.6.0
   logger: ^2.0.2+1
+  get_it: ^7.6.8
+  mockito: ^5.4.4
+  version: ^3.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
   build_runner: ^2.3.3
+  integration_test:
+    sdk: flutter
 
 flutter:
+  
