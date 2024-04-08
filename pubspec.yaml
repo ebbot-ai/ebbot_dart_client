@@ -1,6 +1,6 @@
 name: ebbot_dart_client
-description: "A new Flutter package project."
-version: 0.0.5
+description: "The Ebbot dart client library."
+version: 0.0.6
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 homepage:
 
