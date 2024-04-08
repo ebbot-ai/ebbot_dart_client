@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/service/config_resolver_service.dart';
