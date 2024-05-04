@@ -5,7 +5,7 @@ part 'chat_config.g.dart';
 @JsonSerializable()
 class ChatConfig {
   //@JsonKey(name: 'chat_style')
-  //final ChatStyle chatStyle;
+  final ChatStyle chat_style;
   final String version;
   //final BotChatStyles botChatStyles;
   //final Features features;
@@ -15,7 +15,7 @@ class ChatConfig {
   //final List<ChatTriggers> chatTriggers;
 
   ChatConfig({
-    //equired this.chatStyle,
+    required this.chat_style,
     required this.version,
     //required this.botChatStyles,
     //required this.features,
@@ -34,12 +34,12 @@ class ChatConfig {
 @JsonSerializable()
 class ChatStyle {
   final String version;
-  final ChatStyleV1 v1;
+  //final ChatStyleV1 v1;
   final ChatStyleV2 v2;
 
   ChatStyle({
     required this.version,
-    required this.v1,
+    //required this.v1, // Ignore v1 as it does not have much info
     required this.v2,
   });
 
@@ -129,7 +129,7 @@ class ChatStyleV1 {
 
 @JsonSerializable()
 class ChatStyleV2 {
-  final String spamTextColor;
+  /*final String spamTextColor;
   final String spamTextBackground;
   final String spamText;
   final String headerColor;
@@ -170,12 +170,12 @@ class ChatStyleV2 {
   final String signInText;
   final String signInUrl;
   final bool alertEnabled;
-  final AlertTimeWindow alertTimeWindow;
-  final bool infoSectionEnabled;
-  final bool infoSectionInConversation;
-  final String infoSectionTitle;
-  final String infoSectionText;
-  final String chatPosition;
+  final AlertTimeWindow alertTimeWindow;*/
+  final bool info_section_enabled;
+  final bool info_section_in_conversation;
+  final String info_section_title;
+  final String info_section_text;
+  /*final String chatPosition;
   final String chatPositionVertical;
   final String chatPositionOffset;
   final String chatPositionVerticalOffset;
@@ -219,10 +219,10 @@ class ChatStyleV2 {
   final String attSeekerRegularBtnBorderRadius;
   final String attSeekerRegularBtnTextColor;
   final bool attSeekerShowAvatar;
-  final String attSeekerTextColor;
+  final String attSeekerTextColor;*/
 
   ChatStyleV2({
-    required this.spamTextColor,
+    /*required this.spamTextColor,
     required this.spamTextBackground,
     required this.spamText,
     required this.headerColor,
@@ -263,12 +263,12 @@ class ChatStyleV2 {
     required this.signInText,
     required this.signInUrl,
     required this.alertEnabled,
-    required this.alertTimeWindow,
-    required this.infoSectionEnabled,
-    required this.infoSectionInConversation,
-    required this.infoSectionTitle,
-    required this.infoSectionText,
-    required this.chatPosition,
+    required this.alertTimeWindow,*/
+    required this.info_section_enabled,
+    required this.info_section_in_conversation,
+    required this.info_section_title,
+    required this.info_section_text,
+    /*required this.chatPosition,
     required this.chatPositionVertical,
     required this.chatPositionOffset,
     required this.chatPositionVerticalOffset,
@@ -312,7 +312,7 @@ class ChatStyleV2 {
     required this.attSeekerRegularBtnBorderRadius,
     required this.attSeekerRegularBtnTextColor,
     required this.attSeekerShowAvatar,
-    required this.attSeekerTextColor,
+    required this.attSeekerTextColor,*/
   });
 
   factory ChatStyleV2.fromJson(Map<String, dynamic> json) =>

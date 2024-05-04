@@ -3,6 +3,7 @@ library ebbot_chat;
 import 'dart:async';
 
 import 'package:ebbot_dart_client/configuration/configuration.dart';
+import 'package:ebbot_dart_client/entities/notifications/notification.dart';
 import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:ebbot_dart_client/entities/chat/chat.dart';
 import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
@@ -42,6 +43,9 @@ class EbbotDartClient {
   late EbbotChatListener _listener;
   EbbotChatListener get listener => _listener;
 
+  final List<Notification> _notifications = [];
+  List<Notification> get notifications => _notifications;
+
   EbbotDartClient(this._botId, this._configuration);
 
   Future<void> initialize() async {
@@ -51,6 +55,15 @@ class EbbotDartClient {
     _ebbotHttpClient = EbbotHttpClient(
         botId: _botId, chatId: _chatId, env: _configuration.environment);
     _chatConfig = await _ebbotHttpClient.fetchConfig();
+
+    // Add any notifications to the list
+    // TODO: reactor this to separate class when i have the time
+    if (_chatConfig.chat_style.v2.info_section_enabled &&
+        _chatConfig.chat_style.v2.info_section_in_conversation) {
+      var _title = _chatConfig.chat_style.v2.info_section_title;
+      var _text = _chatConfig.chat_style.v2.info_section_text;
+      _notifications.add(Notification(_title, _text, true));
+    }
 
     logger.i("Config result:$_chatConfig");
 
