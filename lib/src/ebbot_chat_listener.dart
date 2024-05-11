@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:ebbot_dart_client/entities/chat/chat.dart';
-import 'package:ebbot_dart_client/entities/message/message.dart';
-import 'package:ebbot_dart_client/entities/notifications/notification.dart';
-import 'package:ebbot_dart_client/entities/session/session_init.dart';
+import 'package:ebbot_dart_client/entity/chat/chat.dart';
+import 'package:ebbot_dart_client/entity/message/message.dart';
+import 'package:ebbot_dart_client/entity/notification/notification.dart';
+import 'package:ebbot_dart_client/entity/session/session_init.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 import 'package:logger/logger.dart';
 

@@ -1,5 +1,5 @@
 
-import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/service/config_resolver_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:http/http.dart' as http;

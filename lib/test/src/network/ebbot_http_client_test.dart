@@ -1,6 +1,6 @@
 import 'package:ebbot_dart_client/configuration/environment_configuration_config.dart';
 import 'package:ebbot_dart_client/src/network/ebbot_http_client.dart';
-import 'package:ebbot_dart_client/entities/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_test/flutter_test.dart';
 

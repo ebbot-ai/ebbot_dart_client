@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ebbot_dart_client/entities/session/session_init.dart';
+import 'package:ebbot_dart_client/entity/session/session_init.dart';
 import 'package:ebbot_dart_client/service/asyngular_resolver_service.dart';
 import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';

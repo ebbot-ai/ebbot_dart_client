@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:ebbot_dart_client/entities/session/session_init.dart';
+import 'package:ebbot_dart_client/entity/session/session_init.dart';
 import 'package:ebbot_dart_client/service/asyngular_resolver_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:http/http.dart' as http;
