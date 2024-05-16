@@ -497,10 +497,12 @@ class Scenario {
 class Answers {
   final String type;
   final dynamic value;
+  final String? input_field;
 
   Answers({
     required this.type,
     required this.value,
+    required this.input_field,
   });
 
   factory Answers.fromJson(Map<String, dynamic> json) =>

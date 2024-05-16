@@ -247,11 +247,13 @@ Map<String, dynamic> _$ScenarioToJson(Scenario instance) => <String, dynamic>{
 Answers _$AnswersFromJson(Map<String, dynamic> json) => Answers(
       type: json['type'] as String,
       value: json['value'],
+      input_field: json['input_field'] as String?,
     );
 
 Map<String, dynamic> _$AnswersToJson(Answers instance) => <String, dynamic>{
       'type': instance.type,
       'value': instance.value,
+      'input_field': instance.input_field,
     };
 
 ChatTriggers _$ChatTriggersFromJson(Map<String, dynamic> json) => ChatTriggers(

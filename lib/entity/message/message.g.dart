@@ -37,6 +37,7 @@ MessageContent _$MessageContentFromJson(Map<String, dynamic> json) =>
       value: json['value'],
       timestamp: json['timestamp'] as String,
       type: json['type'] as String,
+      input_field: json['input_field'] as String?,
       conversation: json['conversation'] as Map<String, dynamic>?,
     );
 
@@ -49,6 +50,7 @@ Map<String, dynamic> _$MessageContentToJson(MessageContent instance) =>
       'sender': instance.sender,
       'value': instance.value,
       'timestamp': instance.timestamp,
+      'input_field': instance.input_field,
       'type': instance.type,
       'conversation': instance.conversation,
     };

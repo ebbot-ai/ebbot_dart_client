@@ -41,6 +41,7 @@ class MessageContent {
   final String sender;
   final dynamic value;
   final String timestamp;
+  final String? input_field; // Can be "visible", "hidden", "disabled" or null
   // type: gpt, url, etc (it will affect the data structure of value)
   final String type;
   final Map<String, dynamic>? conversation;
@@ -54,6 +55,7 @@ class MessageContent {
     required this.value,
     required this.timestamp,
     required this.type,
+    required this.input_field,
     this.conversation,
   });
 

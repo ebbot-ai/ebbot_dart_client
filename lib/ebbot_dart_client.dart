@@ -112,6 +112,7 @@ class EbbotDartClient {
             sender: "bot",
             value: answer.value,
             timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
+            input_field: answer.input_field,
             type: answer.type,
           ),
         ),
