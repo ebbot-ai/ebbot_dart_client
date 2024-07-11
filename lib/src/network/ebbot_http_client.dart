@@ -1,4 +1,3 @@
-
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/service/config_resolver_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
@@ -13,7 +12,7 @@ class EbbotHttpClient {
     'Content-Type': 'application/json',
   };
 
-  final Logger logger = Logger(printer: PrettyPrinter(lineLength: 2000));
+  final logger = Logger(printer: PrettyPrinter(lineLength: 2000));
 
   String botId;
   String chatId;
@@ -37,21 +36,6 @@ class EbbotHttpClient {
     var config = await _fetchConfig(env);
     if (config != null) {
       return config;
-    }
-
-    logger.w(
-        "Provided environment $env does not have a config at uri $uri, using fallback mechanism");
-
-    // Then try to fetch the config for all the other environments
-    var hosts = ConfigResolverService.baseUrls.keys
-        .where((configEnv) => configEnv != env);
-    for (var host in hosts) {
-      var config = await _fetchConfig(host);
-      if (config != null) {
-        logger.i("Found config for env $host at uri $uri");
-        return config;
-      }
-      logger.w("Failed to fetch config for env $host at uri $uri, trying next");
     }
 
     throw Exception("Failed to fetch config for env $env at uri $uri");

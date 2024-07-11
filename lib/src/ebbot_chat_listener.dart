@@ -27,11 +27,34 @@ class EbbotChatListener extends BasicListener {
       this._chatStreamController);
 
   void _onChatCreated(Chat chat) {
+    if (_chatStreamController.isClosed) {
+      logger.w("Chat stream controller is closed");
+      return;
+    }
+    if (_chatStreamController.isPaused) {
+      logger.w("Chat stream controller is paused");
+      return;
+    }
+
     _chatStreamController.add(chat);
   }
 
   void _onMessageCreated(Message message) {
+    if (_messageStreamController.isClosed) {
+      logger.w("Message stream controller is closed");
+      return;
+    }
+    if (_messageStreamController.isPaused) {
+      logger.w("Message stream controller is paused");
+      return;
+    }
+
     _messageStreamController.add(message);
+  }
+
+  Future<void> closeStreamControllers() async {
+    await _messageStreamController.close();
+    await _chatStreamController.close();
   }
 
   @override

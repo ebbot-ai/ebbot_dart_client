@@ -51,42 +51,47 @@ class EbbotDartClient {
   Future<void> initialize() async {
     logger.i("initialize");
 
+    logger.i("Fetching configuration from server");
     // Initialize the http client
     _ebbotHttpClient = EbbotHttpClient(
         botId: _botId, chatId: _chatId, env: _configuration.environment);
+
     _chatConfig = await _ebbotHttpClient.fetchConfig();
+    logger.i("Successfully fetched configuration from server");
 
     // Add any notifications to the list
     // TODO: reactor this to separate class when i have the time
     if (_chatConfig.chat_style.v2.info_section_enabled &&
         _chatConfig.chat_style.v2.info_section_in_conversation) {
-      var _title = _chatConfig.chat_style.v2.info_section_title;
-      var _text = _chatConfig.chat_style.v2.info_section_text;
-      _notifications.add(Notification(_title, _text, true));
+      var title = _chatConfig.chat_style.v2.info_section_title;
+      var text = _chatConfig.chat_style.v2.info_section_text;
+      _notifications.add(Notification(title, text, true));
     }
 
-    logger.i("Config result:$_chatConfig");
-
     // Initalize the asyngular client
+    logger.i("Initializing asyngular client and initializing session");
     _asyngularHttpClient =
         AsyngularHttpClient(_botId, _chatId, _configuration.environment);
 
     _httpSession = await _asyngularHttpClient.initSession();
+    logger.i("Successfully initialized asyngular client and session");
+
     _listener = EbbotChatListener(
         _httpSession, _messageStreamController, _chatStreamController);
 
+    logger.i("Initializing asyngular websocket client");
     _asyngularWebsocketClient =
         AsyngularWebsocketClient(_botId, _chatId, _configuration.environment);
+    logger.i("Successfully initialized asyngular websocket client");
 
+    logger.i("Initializing socket");
     _socket =
         await _asyngularWebsocketClient.initSocket(_httpSession, _listener);
+    logger.i("Successfully initialized socket");
 
+    logger.i("Subscribing to chat");
     await _onSubscribed(); // Wait until we have subscribed
-
-    // If we have any userinfo, send it to the chatbot
-    if (_configuration.userAttributes.isNotEmpty) {
-      sendUpdateConversationInfo(_configuration.userAttributes);
-    }
+    logger.i("Successfully subscribed to chat");
   }
 
   void startReceive() {
@@ -129,8 +134,11 @@ class EbbotDartClient {
     }
   }
 
-  void dispose({bool closeSocket = false}) {
-    logger.i("Disposing of chat client socket");
+  Future<void> closeAsync({bool closeSocket = false}) async {
+    logger.i("Closing chat client socket");
+
+    sendCloseChat();
+    await _asyngularHttpClient.endSession();
 
     if (closeSocket == true) {
       logger.i("Socket has been initialized, closing it");
@@ -138,15 +146,8 @@ class EbbotDartClient {
       _socket.closeWebsocket();
     }
 
-    logger.i("Disposing of chat client streams");
-    _chatStreamController.close();
-    _messageStreamController.close();
-  }
-
-  Future<void> restart() async {
-    logger.i("Restarting chat client");
-    dispose(closeSocket: true);
-    await initialize();
+    logger.i("Closing chat client streams");
+    await _listener.closeStreamControllers();
   }
 
   void sendTextMessage(String message) {
@@ -314,6 +315,36 @@ class EbbotDartClient {
       "event": "request.chat"
     };
     logger.i("Sending conversation info update with info: $conversationInfo");
+    if (_listener.subscribe == null) {
+      logger.w("No subscription available, not sending message");
+      return;
+    }
+    _listener.subscribe?.emit("request.chat", publishdata);
+  }
+
+  void sendCloseChat() {
+    var id = const Uuid().v4();
+    var publishdata = {
+      "clientId": _botId,
+      "conversation": {"user_last_input": "action_close_chat"},
+      "data": {
+        "id": id,
+        "chatId": _chatId,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "finished": true,
+        "chatId": _chatId,
+        "finished": true,
+        "stop": true,
+        "sender": "user",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "type": "action",
+        "username": _chatId,
+        "value": "action_close_chat",
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+    logger.i("Sending close chat message");
     if (_listener.subscribe == null) {
       logger.w("No subscription available, not sending message");
       return;
