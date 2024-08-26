@@ -114,7 +114,7 @@ class EbbotDartClient {
             botId: _botId,
             chatId: _chatId,
             companyId: _botId,
-            sender: "bot",
+            sender: "configuration",
             value: answer.value,
             timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
             input_field: answer.input_field,
