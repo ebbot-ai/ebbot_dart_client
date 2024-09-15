@@ -15,7 +15,7 @@ dependencies:
   socketcluster_client:
     git:
       url: https://github.com/ebbot-ai/socketcluster_client
-      ref: main
+      ref: v0.3.1
   uuid: ^4.3.3
   json_annotation: ^4.8.1
   json_serializable: ^6.6.0
