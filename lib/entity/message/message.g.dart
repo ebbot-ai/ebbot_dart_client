@@ -29,7 +29,7 @@ Map<String, dynamic> _$MessageDataToJson(MessageData instance) =>
 
 MessageContent _$MessageContentFromJson(Map<String, dynamic> json) =>
     MessageContent(
-      id: json['id'] as String,
+      id: json['id'] as String?,
       botId: json['botId'] as String,
       chatId: json['chatId'] as String,
       companyId: json['companyId'] as String,
