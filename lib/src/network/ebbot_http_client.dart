@@ -4,7 +4,6 @@ import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:logger/logger.dart';
 import 'dart:convert';
 
 class EbbotHttpClient {

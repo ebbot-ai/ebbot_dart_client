@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
-import 'package:ebbot_dart_client/entity/notification/notification.dart';
 import 'package:ebbot_dart_client/entity/session/session_init.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
-import 'package:logger/logger.dart';
 
 class EbbotChatListener extends BasicListener {
   final logger = GetIt.instance<LogService>().logger;

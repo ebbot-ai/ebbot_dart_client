@@ -6,7 +6,6 @@ import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:get_it/get_it.dart';
-import 'package:logger/logger.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 
 class AsyngularWebsocketClient {
