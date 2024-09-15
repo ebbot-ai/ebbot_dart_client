@@ -34,7 +34,8 @@ class MessageData {
 
 @JsonSerializable()
 class MessageContent {
-  final String id;
+  final String?
+      id; // ID can be omitted if the type is button_click for some reason..
   final String botId;
   final String chatId;
   final String companyId;

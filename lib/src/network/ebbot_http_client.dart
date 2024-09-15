@@ -1,6 +1,8 @@
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/service/config_resolver_service.dart';
+import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'dart:convert';
@@ -12,7 +14,7 @@ class EbbotHttpClient {
     'Content-Type': 'application/json',
   };
 
-  final logger = Logger(printer: PrettyPrinter(lineLength: 2000));
+  final logger = GetIt.instance<LogService>().logger;
 
   String botId;
   String chatId;
@@ -30,7 +32,7 @@ class EbbotHttpClient {
     var configBaseUrl = ConfigResolverService.resolve(env);
     final uri = Uri.parse(
         "$configBaseUrl$botId.json?t=${DateTime.now().millisecondsSinceEpoch}");
-    logger.i("Fetching config from environment $env and uri $uri");
+    logger?.i("Fetching config from environment $env and uri $uri");
 
     // First try to fetch the config for the given environment
     var config = await _fetchConfig(env);
@@ -50,7 +52,7 @@ class EbbotHttpClient {
           await http.get(uri, headers: {'Accept-Charset': 'utf-8'});
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        logger.w("Failed to fetch config for env $env at uri $uri");
+        logger?.w("Failed to fetch config for env $env at uri $uri");
         return null;
       }
 
@@ -58,7 +60,7 @@ class EbbotHttpClient {
       final jsonResponse = json.decode(decodedBody);
       return ChatConfig.fromJson(jsonResponse);
     } catch (e) {
-      logger.e("Error fetching config for env $env at uri $uri: $e");
+      logger?.e("Error fetching config for env $env at uri $uri: $e");
 
       return null;
     }
