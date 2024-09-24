@@ -1,10 +1,11 @@
+import 'dart:convert';
+
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/service/config_resolver_service.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class EbbotHttpClient {
   final Map<String, String> ebbotAPIHeaders = {

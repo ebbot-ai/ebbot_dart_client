@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
-import 'package:ebbot_dart_client/entity/session/session_init.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
@@ -10,7 +9,7 @@ import 'package:socketcluster_client/socketcluster_client.dart';
 class EbbotChatListener extends BasicListener {
   final logger = GetIt.instance<LogService>().logger;
 
-  final HttpSession _initResult;
+  final String _chatId;
   final StreamController<Message> _messageStreamController;
   final StreamController<Chat> _chatStreamController;
 
@@ -21,8 +20,8 @@ class EbbotChatListener extends BasicListener {
   Stream<Message> get messageStream => _messageStreamController.stream;
   Stream<Chat> get chatStream => _chatStreamController.stream;
 
-  EbbotChatListener(this._initResult, this._messageStreamController,
-      this._chatStreamController);
+  EbbotChatListener(
+      this._chatId, this._messageStreamController, this._chatStreamController);
 
   void _onChatCreated(Chat chat) {
     if (_chatStreamController.isClosed) {
@@ -68,10 +67,8 @@ class EbbotChatListener extends BasicListener {
   void onConnected(Socket socket) async {
     logger?.i("onConnected: socket $socket");
 
-    final chatId = _initResult.data.session.chatId;
-
     // Subscribe to the chat
-    var subscriptionId = 'response.chat.$chatId';
+    var subscriptionId = 'response.chat.$_chatId';
     subscribe = socket.subscribe(subscriptionId);
 
     subscribe?.onSubscribe(subscriptionId, (name, data) {
@@ -96,14 +93,11 @@ class EbbotChatListener extends BasicListener {
             break;
           default:
             // Handle unknown type
-            logger?.i("Unsupported type: $type");
+            logger?.w("Unsupported type: $type");
             break;
         }
       }
     });
-
-    // Subscribed!
-    logger?.i("Subscribed!!");
   }
 
   @override

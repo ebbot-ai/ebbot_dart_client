@@ -2,16 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ebbot_dart_client/entity/session/session_init.dart';
-import 'package:ebbot_dart_client/service/asyngular_resolver_service.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
+import 'package:ebbot_dart_client/src/network/base_http_client.dart';
 import 'package:ebbot_dart_client/valueobjects/environment.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
-class AsyngularHttpClient {
+class AsyngularHttpClient extends BaseHttpClient {
   final String _botId;
   final String _chatId;
-  final Environment _environment;
   late HttpSession _httpSession;
 
   final logger = GetIt.instance<LogService>().logger;
@@ -22,11 +21,11 @@ class AsyngularHttpClient {
     'Content-Type': 'application/json',
   };
 
-  AsyngularHttpClient(this._botId, this._chatId, this._environment);
+  AsyngularHttpClient(this._botId, this._chatId, Environment environment)
+      : super(environment);
 
   Future<HttpSession> initSession() async {
-    final url = AsyngularResolverService.resolveHttps(_environment);
-    final uri = Uri.parse("$url/init");
+    final uri = getAPIUri("asyngular/init");
     final body = jsonEncode({"botId": _botId, "chatId": _chatId});
     logger?.i("Initializing session with uri $uri and body $body");
     final response = await http.post(uri, body: body, headers: ebbotAPIHeaders);
@@ -36,8 +35,7 @@ class AsyngularHttpClient {
   }
 
   Future<void> endSession() async {
-    final url = AsyngularResolverService.resolveHttps(_environment);
-    final uri = Uri.parse("$url/end");
+    final uri = getAPIUri("asyngular/end");
     logger?.i("Ending session with uri $uri");
     ebbotAPIHeaders['Authorization'] = "Bearer ${_httpSession.data.token}";
     final response = await http.get(uri, headers: ebbotAPIHeaders);
