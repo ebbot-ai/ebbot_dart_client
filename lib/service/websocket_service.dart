@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:ebbot_dart_client/configuration/configuration.dart';
+import 'package:ebbot_dart_client/entity/button_data/button_data.dart';
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/entity/fileupload/image_response.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_websocket_client.dart';
-import 'package:ebbot_dart_client/util/time.dart';
+import 'package:ebbot_dart_client/util/time_extension.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
@@ -22,30 +24,31 @@ class WebSocketService {
   late AsyngularWebsocketClient _asyngularWebsocketClient;
   late EbbotChatListener _chatListener;
 
-  final _messageStreamController = StreamController<Message>.broadcast();
-  final _chatStreamController = StreamController<Chat>.broadcast();
+  get _messageStreamController => _chatListener.messageStreamController;
+  get _chatStreamController => _chatListener.chatStreamController;
 
   bool _firstEventSent = true;
 
-  Stream<Message> get messageStream => _messageStreamController.stream;
-  Stream<Chat> get chatStream => _chatStreamController.stream;
+  Stream<Message> get messageStream =>
+      _chatListener.messageStreamController.stream;
+  Stream<Chat> get chatStream => _chatListener.chatStreamController.stream;
 
   WebSocketService(this._botId, this._chatId, this._configuration) {
     _logger = GetIt.I<LogService>().logger;
-    _asyngularWebsocketClient = _createAsyngularWebsocketClient();
-    _chatListener = _createListener();
+    _chatListener = _createChatListener();
   }
 
   Future<void> connect(String token) async {
+    _logger?.i("Connecting to websocket service");
+    _asyngularWebsocketClient = _createAsyngularWebsocketClient();
+
     _socket = await _asyngularWebsocketClient.initSocket(token, _chatListener);
-    await _onSubscribed();
+    await _chatListener.onSubscribed();
   }
 
-  EbbotChatListener _createListener() {
+  EbbotChatListener _createChatListener() {
     return EbbotChatListener(
       _chatId,
-      _messageStreamController,
-      _chatStreamController,
     );
   }
 
@@ -68,42 +71,58 @@ class WebSocketService {
       _socket.closeWebsocket();
     }
 
-    _logger?.i("Closing chat client streams");
-    await _chatListener.closeStreamControllers();
+    await _chatListener.reinitStreamControllersr();
   }
 
-  void sendTextMessage(String message, String? buttonId) {
-    _emitChatEvent('text', message, buttonId);
+  void sendTextMessage(String message, ButtonData? buttonData) {
+    final addtionalData = {'value': message};
+    _emitChatEvent('text',
+        additionalData: addtionalData, buttonData: buttonData);
   }
 
-  void sendUrlMessage(String url, String? buttonId) {
-    _emitChatEvent('url_click', url, buttonId);
+  void sendUrlMessage(String url, ButtonData? buttonData) {
+    final additionalData = {'value': url};
+    _emitChatEvent('url_click',
+        additionalData: additionalData, buttonData: buttonData);
   }
 
-  void sendRatingMessage(int rating, String? buttonId) {
-    _emitChatEvent('rating', additionalData: {'rating': rating}, buttonId);
+  void sendRatingMessage(int rating, ButtonData? buttonData) {
+    final additionalData = {
+      'value': {'rating': rating}
+    };
+    _emitChatEvent('rating',
+        additionalData: additionalData, buttonData: buttonData);
   }
 
-  void sendScenarioMessage(String scenario, String? buttonId) {
-    _emitChatEvent(
-        'scenario', additionalData: {'scenario': scenario}, buttonId);
+  void sendScenarioMessage(String scenario, ButtonData? buttonData) {
+    _emitChatEvent('scenario',
+        additionalData: {
+          'value': {'scenario': scenario}
+        },
+        buttonData: buttonData);
   }
 
-  void sendVariableMessage(String name, String value, String? buttonId) {
-    _emitChatEvent('variable', value, buttonId,
-        additionalData: {'name': name, 'value': value});
+  void sendVariableMessage(String name, String value, ButtonData? buttonData) {
+    final additionalData = {
+      'value': {"name": name, "value": value}
+    };
+    _emitChatEvent('variable',
+        additionalData: additionalData, buttonData: buttonData);
   }
 
   void sendUpdateConversationInfoMessage(
-      Map<String, dynamic> conversationInfo, String? buttonId) {
-    _emitChatEvent('update_conversation_info', conversationInfo, buttonId,
-        additionalData: {'stop': true});
+      Map<String, dynamic> conversationInfo, ButtonData? buttonData) {
+    final additionalData = {"value": conversationInfo, "stop": true};
+    _emitChatEvent('update_conversation_info',
+        buttonData: buttonData, additionalData: additionalData);
   }
 
-  /*void sendButtonClickedMessage(String buttonId, String value) {
-    _emitChatEvent('button_click', value,
-        additionalData: {'buttonId': buttonId});
-  }*/
+  void sendButtonClickedMessage(ButtonData buttonData) {
+    _logger?.d(
+        "Button click detected, sending button click event for button id: ${buttonData.buttonId}, label: ${buttonData.label}");
+    dynamic buttonClickData = _getButtonClickData(buttonData);
+    _chatListener.emitEvent("request.chat", buttonClickData);
+  }
 
   void sendCloseChatMessage() {
     final additionalData = {"value": 'action_close_chat', "stop": true};
@@ -132,32 +151,40 @@ class WebSocketService {
     _addToMessageStreamController(message);
   }
 
-  void _emitChatEvent(String type,
-      {String? buttonId, Map<String, dynamic>? additionalData}) {
-    if (_chatListener.subscribe == null) {
-      _logger?.w("Not subscribed, not emitting event");
-      return;
-    }
+  void sendImageMessage(ImageResponse imageResponse) {
+    _logger?.d(
+        "Sending image message for filename: ${imageResponse.filename}, mimetype: ${imageResponse.mimeType}, uploaded filepath: ${imageResponse.image.filepath}, size: ${imageResponse.size}");
+    final imageData = _getImageData(imageResponse);
+    _chatListener.emitEvent("request.chat", imageData);
+  }
 
+  void _emitChatEvent(String type,
+      {ButtonData? buttonData, dynamic additionalData}) {
     // If no events have been emitted before, send a web_init chat as well
     if (_firstEventSent) {
       dynamic webInitData = _getWebInitEventData();
-      _logger?.i("Emitting web_init event");
-      _chatListener.subscribe?.emit("request.chat", webInitData);
+      _logger?.d("Emitting web_init event");
+      _logger?.d(webInitData);
+      _chatListener.emitEvent("request.chat", webInitData);
       _firstEventSent = false;
     }
 
     // If a button id has been passed, we need to emit a button clicked event before
     // we send the actual event
-    if (buttonId != null) {
-      _logger?.i("Button click detected, sending button click event");
-      dynamic buttonData = _getButtonClickData(buttonId);
-      _chatListener.subscribe?.emit("request.chat", buttonData);
+    if (buttonData != null) {
+      _logger?.d(
+          "Button click detected, sending button click event for button id: ${buttonData.buttonId}, label: ${buttonData.label}");
+      dynamic buttonClickData = _getButtonClickData(buttonData);
+      _logger?.d(buttonClickData);
+      _chatListener.emitEvent("request.chat", buttonClickData);
     }
 
     dynamic publishData = _getPublishData(type, additionalData: additionalData);
 
-    _chatListener.subscribe?.emit("request.chat", publishData);
+    _logger?.d("Emitting event");
+    _logger?.d(publishData);
+
+    _chatListener.emitEvent("request.chat", publishData);
   }
 
   dynamic _getPublishData(String type,
@@ -183,14 +210,12 @@ class WebSocketService {
     };
   }
 
-  dynamic _getButtonClickData(String buttonId) {
+  dynamic _getButtonClickData(ButtonData buttonData) {
     var id = const Uuid().v4();
-
     return {
       "clientId": _botId,
-      "conversation": {},
+      "conversation": {"user_last_input": buttonData.buttonId},
       "data": {
-        "id": id,
         "full_name": "Test Testsson", // TODO: Use real name
         "chatId": _chatId,
         "finished": true,
@@ -198,7 +223,9 @@ class WebSocketService {
         "timestamp": DateTime.now().fractionalSecond(),
         "type": "button_click",
         "username": _chatId,
-        "buttonId": buttonId,
+        "buttonId": buttonData.buttonId,
+        "label": buttonData.label,
+        "value": buttonData.label
       },
       "id": id,
       "event": "request.chat"
@@ -226,6 +253,33 @@ class WebSocketService {
     };
   }
 
+  dynamic _getImageData(ImageResponse imageResponse) {
+    var id = const Uuid().v4();
+    return {
+      "clientId": _botId,
+      "conversation": {},
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "sender": "user",
+        "timestamp": DateTime.now().fractionalSecond(),
+        "type": "image",
+        "username": _chatId,
+        "value": {
+          "filename": imageResponse.filename,
+          "key": imageResponse.image.filepath,
+          "label": imageResponse.filename,
+          "mimetype": imageResponse.mimeType,
+          "size": imageResponse.size
+        }
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+  }
+
   void _addToMessageStreamController(Message message) {
     if (_messageStreamController.isClosed) {
       _logger?.w("Message stream is closed, not adding message");
@@ -233,20 +287,5 @@ class WebSocketService {
     }
 
     _messageStreamController.add(message);
-  }
-
-  Future<void> _onSubscribed() async {
-    Completer<void> completer = Completer<void>();
-
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      _logger?.i("Checking if we have subscribed");
-      if (_chatListener.subscribe != null) {
-        _logger?.i("We have subscribed");
-        timer.cancel();
-        completer.complete();
-      }
-    });
-
-    return completer.future;
   }
 }

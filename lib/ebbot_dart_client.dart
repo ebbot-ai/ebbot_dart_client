@@ -3,12 +3,13 @@ library ebbot_chat;
 import 'dart:async';
 
 import 'package:ebbot_dart_client/configuration/configuration.dart';
+import 'package:ebbot_dart_client/entity/button_data/button_data.dart';
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/entity/fileupload/image_response.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
 import 'package:ebbot_dart_client/entity/notification/notification.dart';
 import 'package:ebbot_dart_client/entity/session/session_init.dart';
-import 'package:ebbot_dart_client/enum/message_origin.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/service/websocket_service.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_http_client.dart';
@@ -84,9 +85,7 @@ class EbbotDartClient {
 
     // Initalize the asyngular client
     _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId, environment);
-
     _httpSession = await _asyngularHttpClient.initSession();
-
     _fileUploadHttpClient = FileUploadHttpClient(environment);
 
     await _webSocketService.connect(_httpSession.data.token);
@@ -117,45 +116,49 @@ class EbbotDartClient {
   }
 
   Future<void> closeAsync({bool closeSocket = false}) async {
-    await _asyngularHttpClient.endSession();
     await _webSocketService.closeAsync();
+    await _asyngularHttpClient.endSession();
   }
 
-  void sendTextMessage(String message, {String? buttonId}) {
-    _webSocketService.sendTextMessage(message, buttonId);
+  void sendTextMessage(String message, {ButtonData? buttonData}) {
+    _webSocketService.sendTextMessage(message, buttonData);
   }
 
-  void sendUrlMessage(String url, {String? buttonId}) {
-    _webSocketService.sendUrlMessage(url, buttonId);
+  void sendUrlMessage(String url, {ButtonData? buttonData}) {
+    _webSocketService.sendUrlMessage(url, buttonData);
   }
 
-  void sendRatingMessage(int rating, {String? buttonId}) {
-    _webSocketService.sendRatingMessage(rating, buttonId);
+  void sendRatingMessage(int rating, {ButtonData? buttonData}) {
+    _webSocketService.sendRatingMessage(rating, buttonData);
   }
 
-  void sendScenarioMessage(String scenario, {String? buttonId}) {
-    _webSocketService.sendScenarioMessage(scenario, buttonId);
+  void sendScenarioMessage(String scenario, {ButtonData? buttonData}) {
+    _webSocketService.sendScenarioMessage(scenario, buttonData);
   }
 
-  void sendVariableMessage(String name, String value, {String? buttonId}) {
-    _webSocketService.sendVariableMessage(name, value, buttonId);
+  void sendVariableMessage(String name, String value,
+      {ButtonData? buttonData}) {
+    _webSocketService.sendVariableMessage(name, value, buttonData);
   }
 
   void sendUpdateConversationInfoMessage(Map<String, dynamic> conversationInfo,
-      {String? buttonId}) {
+      {ButtonData? buttonData}) {
     _webSocketService.sendUpdateConversationInfoMessage(
-        conversationInfo, buttonId);
+        conversationInfo, buttonData);
   }
 
-  /*void sendButtonClickedMessage(String buttonId, String value) {
-    _webSocketService.sendButtonClickedMessage(buttonId, value);
-  }*/
+  void sendButtonClickedMessage(ButtonData buttonData) {
+    _webSocketService.sendButtonClickedMessage(buttonData);
+  }
 
   void sendCloseChatMessage() {
     _webSocketService.sendCloseChatMessage();
   }
 
   Future<void> uploadImage(imageBytes, String filePath) async {
-    _fileUploadHttpClient.uploadImage(imageBytes, filePath);
+    ImageResponse imageResponse =
+        await _fileUploadHttpClient.uploadImage(imageBytes, filePath);
+
+    _webSocketService.sendImageMessage(imageResponse);
   }
 }

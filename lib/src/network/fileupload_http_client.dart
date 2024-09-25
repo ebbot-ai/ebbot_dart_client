@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:ebbot_dart_client/entity/fileupload/image.dart';
+import 'package:ebbot_dart_client/entity/fileupload/image_response.dart';
 import 'package:ebbot_dart_client/entity/fileupload/presign_url.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/src/network/base_http_client.dart';
@@ -8,7 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
-import 'package:path/path.dart' as p;
+import 'package:ebbot_dart_client/util/file.dart';
 import 'package:uuid/uuid.dart';
 
 class FileUploadHttpClient extends BaseHttpClient {
@@ -24,22 +26,29 @@ class FileUploadHttpClient extends BaseHttpClient {
 
   FileUploadHttpClient(super.environment);
 
-  Future<void> uploadImage(Uint8List imageBytes, String filePath) async {
+  Future<ImageResponse> uploadImage(
+      Uint8List imageBytes, String filePath) async {
     final filename = _generateFilename(imageBytes, filePath);
 
     logger?.i('Fetching pre-signed URL for file path $filePath');
     final presignedUrl = await _fetchPreSignedUrl(imageBytes, filename);
     logger?.i('Uploading image to ${presignedUrl.data}');
-    await _uploadImage(imageBytes, filename, presignedUrl.data);
+    final image = await _uploadImage(imageBytes, filename, presignedUrl.data);
+
+    return ImageResponse(
+        filename: filename,
+        image: image,
+        mimeType: getMimeType(imageBytes),
+        size: imageBytes.length);
   }
 
   String _generateFilename(Uint8List imageBytes, String filePath) {
     final uuid = const Uuid().v4();
-    final extension = _getFileExtension(imageBytes, filePath);
+    final extension = getFileExtension(imageBytes, filePath);
     return '$uuid.$extension';
   }
 
-  Future<void> _uploadImage(
+  Future<Image> _uploadImage(
       Uint8List imageBytes, String filename, String presignedPath) async {
     final uri = Uri.parse(presignedPath);
 
@@ -54,7 +63,7 @@ class FileUploadHttpClient extends BaseHttpClient {
         'file',
         imageBytes,
         filename: filename,
-        contentType: MediaType.parse(_mimeTypeFromExtension(filename)),
+        contentType: MediaType.parse(getMimeType(imageBytes)),
       ),
     );
 
@@ -71,6 +80,7 @@ class FileUploadHttpClient extends BaseHttpClient {
     logger?.i(
         'Image uploaded successfully for url $presignedPath, got status code ${response.statusCode} and reason ${response.reasonPhrase} and body:');
     logger?.i(body);
+    return Image.fromJson(json.decode(body));
   }
 
   Future<PresignUrl> _fetchPreSignedUrl(
@@ -108,55 +118,4 @@ class FileUploadHttpClient extends BaseHttpClient {
     return PresignUrl.fromJson(json.decode(body));
   }
 
-  String _getFileExtension(Uint8List imageBytes, String filePath) {
-    // Get extension from file path
-    String extension = p.extension(filePath).replaceFirst('.', '');
-
-    // Get MIME type and extension from image bytes
-    String? mimeType = lookupMimeType('', headerBytes: imageBytes);
-    String extensionFromMime = _extensionFromMimeType(mimeType ?? '');
-
-    // Decide which extension to use
-    if (extensionFromMime.isNotEmpty) {
-      return extensionFromMime;
-    } else if (extension.isNotEmpty) {
-      return extension;
-    } else {
-      return 'jpg'; // Default extension
-    }
-  }
-
-  String _extensionFromMimeType(String mimeType) {
-    switch (mimeType) {
-      case 'image/jpeg':
-        return 'jpg';
-      case 'image/png':
-        return 'png';
-      case 'image/gif':
-        return 'gif';
-      case 'image/bmp':
-        return 'bmp';
-      case 'image/tiff':
-        return 'tiff';
-      default:
-        return '';
-    }
-  }
-
-  String _mimeTypeFromExtension(String extension) {
-    switch (extension) {
-      case 'jpg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'bmp':
-        return 'image/bmp';
-      case 'tiff':
-        return 'image/tiff';
-      default:
-        return 'application/octet-stream';
-    }
-  }
 }

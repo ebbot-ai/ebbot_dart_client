@@ -7,51 +7,80 @@ import 'package:get_it/get_it.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 
 class EbbotChatListener extends BasicListener {
-  final logger = GetIt.instance<LogService>().logger;
+  final _logger = GetIt.instance<LogService>().logger;
 
   final String _chatId;
-  final StreamController<Message> _messageStreamController;
-  final StreamController<Chat> _chatStreamController;
+  //final StreamController<Message> messageStreamController;
+  //final StreamController<Chat> chatStreamController;
 
   // used from the implementation side to publish chat messags
-  late Socket? subscribe;
+  late Socket? _subscribe;
 
   // used from the implementation side to subscribe to messages and chats
-  Stream<Message> get messageStream => _messageStreamController.stream;
-  Stream<Chat> get chatStream => _chatStreamController.stream;
+  Stream<Message> get messageStream => messageStreamController.stream;
+  Stream<Chat> get chatStream => chatStreamController.stream;
 
-  EbbotChatListener(
-      this._chatId, this._messageStreamController, this._chatStreamController);
+  StreamController<Message> messageStreamController =
+      StreamController<Message>.broadcast();
+  StreamController<Chat> chatStreamController =
+      StreamController<Chat>.broadcast();
+
+  EbbotChatListener(this._chatId);
+
+  Future<void> onSubscribed() async {
+    Completer<void> completer = Completer<void>();
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      _logger?.i("Checking if we have subscribed");
+      if (_subscribe != null) {
+        _logger?.i("We have subscribed");
+        timer.cancel();
+        completer.complete();
+      }
+    });
+
+    return completer.future;
+  }
+
+  void emitEvent(String event, dynamic data) {
+    if (_subscribe == null) {
+      _logger?.w("Not subscribed, not emitting event");
+    }
+
+    _subscribe?.emit(event, data);
+  }
 
   void _onChatCreated(Chat chat) {
-    if (_chatStreamController.isClosed) {
-      logger?.w("Chat stream controller is closed");
+    if (chatStreamController.isClosed) {
+      _logger?.w("Chat stream controller is closed");
       return;
     }
-    if (_chatStreamController.isPaused) {
-      logger?.w("Chat stream controller is paused");
+    if (chatStreamController.isPaused) {
+      _logger?.w("Chat stream controller is paused");
       return;
     }
 
-    _chatStreamController.add(chat);
+    chatStreamController.add(chat);
   }
 
   void _onMessageCreated(Message message) {
-    if (_messageStreamController.isClosed) {
-      logger?.w("Message stream controller is closed");
+    if (messageStreamController.isClosed) {
+      _logger?.w("Message stream controller is closed");
       return;
     }
-    if (_messageStreamController.isPaused) {
-      logger?.w("Message stream controller is paused");
+    if (messageStreamController.isPaused) {
+      _logger?.w("Message stream controller is paused");
       return;
     }
 
-    _messageStreamController.add(message);
+    messageStreamController.add(message);
   }
 
-  Future<void> closeStreamControllers() async {
-    await _messageStreamController.close();
-    await _chatStreamController.close();
+  Future<void> reinitStreamControllersr() async {
+    await messageStreamController.close();
+    await chatStreamController.close();
+    messageStreamController = StreamController<Message>.broadcast();
+    chatStreamController = StreamController<Chat>.broadcast();
   }
 
   @override
@@ -59,20 +88,20 @@ class EbbotChatListener extends BasicListener {
 
   @override
   void onConnectError(Socket socket, e) {
-    logger?.w(
+    _logger?.w(
         "onConnectError: socket $socket e $e"); // What do we do here? Reconnect?
   }
 
   @override
   void onConnected(Socket socket) async {
-    logger?.i("onConnected: socket $socket");
+    _logger?.i("onConnected: socket $socket");
 
     // Subscribe to the chat
     var subscriptionId = 'response.chat.$_chatId';
-    subscribe = socket.subscribe(subscriptionId);
+    _subscribe = socket.subscribe(subscriptionId);
 
-    subscribe?.onSubscribe(subscriptionId, (name, data) {
-      logger?.i(
+    _subscribe?.onSubscribe(subscriptionId, (name, data) {
+      _logger?.i(
           "subscribe.onSubscribe: subscription ID: $subscriptionId name: $name data length: ${data.length}");
 
       // Deserialize the data to either Chat or Message depending on $data['type']
@@ -81,19 +110,19 @@ class EbbotChatListener extends BasicListener {
         final type = item['type'];
         switch (type) {
           case 'message':
-            logger?.i("Handling type: $type");
-            logger?.d(item);
+            _logger?.i("Handling type: $type");
+            _logger?.d(item);
             var message = Message.fromJson(item);
             _onMessageCreated(message);
             break;
           case 'chat':
-            logger?.i("Handling type: $type");
+            _logger?.i("Handling type: $type");
             var chat = Chat.fromJson(item);
             _onChatCreated(chat);
             break;
           default:
             // Handle unknown type
-            logger?.w("Unsupported type: $type");
+            _logger?.w("Unsupported type: $type");
             break;
         }
       }
@@ -102,12 +131,12 @@ class EbbotChatListener extends BasicListener {
 
   @override
   void onDisconnected(Socket socket) {
-    logger?.i("onDisconnected: socket $socket");
+    _logger?.i("onDisconnected: socket $socket");
   }
 
   @override
   void onSetAuthToken(String? token, Socket socket) {
-    logger?.i('onSetAuthToken: socket $socket token $token');
+    _logger?.i('onSetAuthToken: socket $socket token $token');
     socket.authToken = token;
   }
 }
