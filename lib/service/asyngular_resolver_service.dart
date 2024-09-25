@@ -2,11 +2,11 @@ import 'package:ebbot_dart_client/valueobjects/environment.dart';
 
 class AsyngularResolverService {
   static const Map<Environment, String> baseUrls = {
-    Environment.ovhEUProduction: 'ebbot.eu/api/asyngular',
-    Environment.googleEUProduction: 'v2.ebbot.app/api/asyngular',
-    Environment.googleCanadaProduction: 'ca.ebbot.app/api/asyngular',
-    Environment.release: 'release.ebbot.app/api/asyngular',
-    Environment.staging: 'staging.ebbot.app/api/asyngular'
+    Environment.ovhEUProduction: 'ebbot.eu',
+    Environment.googleEUProduction: 'v2.ebbot.app',
+    Environment.googleCanadaProduction: 'ca.ebbot.app',
+    Environment.release: 'release.ebbot.app',
+    Environment.staging: 'staging.ebbot.app'
   };
 
   // resolve the URL
