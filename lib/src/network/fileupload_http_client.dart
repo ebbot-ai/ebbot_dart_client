@@ -117,5 +117,4 @@ class FileUploadHttpClient extends BaseHttpClient {
     logger?.i(body);
     return PresignUrl.fromJson(json.decode(body));
   }
-
 }

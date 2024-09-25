@@ -27,7 +27,7 @@ class WebSocketService {
   get _messageStreamController => _chatListener.messageStreamController;
   get _chatStreamController => _chatListener.chatStreamController;
 
-  bool _firstEventSent = true;
+  bool _firstEventSent = false;
 
   Stream<Message> get messageStream =>
       _chatListener.messageStreamController.stream;
@@ -41,6 +41,7 @@ class WebSocketService {
   Future<void> connect(String token) async {
     _logger?.i("Connecting to websocket service");
     _asyngularWebsocketClient = _createAsyngularWebsocketClient();
+    _firstEventSent = false;
 
     _socket = await _asyngularWebsocketClient.initSocket(token, _chatListener);
     await _chatListener.onSubscribed();
@@ -161,12 +162,12 @@ class WebSocketService {
   void _emitChatEvent(String type,
       {ButtonData? buttonData, dynamic additionalData}) {
     // If no events have been emitted before, send a web_init chat as well
-    if (_firstEventSent) {
+    if (!_firstEventSent) {
       dynamic webInitData = _getWebInitEventData();
       _logger?.d("Emitting web_init event");
       _logger?.d(webInitData);
       _chatListener.emitEvent("request.chat", webInitData);
-      _firstEventSent = false;
+      _firstEventSent = true;
     }
 
     // If a button id has been passed, we need to emit a button clicked event before
