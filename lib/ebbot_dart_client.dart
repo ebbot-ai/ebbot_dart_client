@@ -76,12 +76,13 @@ class EbbotDartClient {
 
     // Add any notifications to the list
     // TODO: reactor this to separate class when i have the time
-    if (_chatConfig.chat_style.v2.info_section_enabled &&
+    // TODO: Enable this when a fix is in place
+    /*if (_chatConfig.chat_style.v2.info_section_enabled &&
         _chatConfig.chat_style.v2.info_section_in_conversation) {
       var title = _chatConfig.chat_style.v2.info_section_title;
       var text = _chatConfig.chat_style.v2.info_section_text;
       _notifications.add(Notification(title, text, true));
-    }
+    }*/
 
     // Initalize the asyngular client
     _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId, environment);
