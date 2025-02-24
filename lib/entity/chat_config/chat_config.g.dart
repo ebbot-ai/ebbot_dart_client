@@ -133,10 +133,10 @@ Map<String, dynamic> _$ChatLanguageToJson(ChatLanguage instance) =>
     };
 
 MessageDelay _$MessageDelayFromJson(Map<String, dynamic> json) => MessageDelay(
-      min: json['min'] as int,
-      max: json['max'] as int,
-      char: json['char'] as int,
-      typing: json['typing'] as int,
+      min: (json['min'] as num).toInt(),
+      max: (json['max'] as num).toInt(),
+      char: (json['char'] as num).toInt(),
+      typing: (json['typing'] as num).toInt(),
     );
 
 Map<String, dynamic> _$MessageDelayToJson(MessageDelay instance) =>

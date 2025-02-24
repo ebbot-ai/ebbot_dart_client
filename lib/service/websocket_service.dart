@@ -17,12 +17,12 @@ import 'package:uuid/uuid.dart';
 
 class WebSocketService {
   final String _botId;
-  final String _chatId;
   final Configuration _configuration;
   late Logger? _logger;
   late Socket _socket;
   late AsyngularWebsocketClient _asyngularWebsocketClient;
   late EbbotChatListener _chatListener;
+  late String _chatId;
 
   get _messageStreamController => _chatListener.messageStreamController;
   get _chatStreamController => _chatListener.chatStreamController;
@@ -33,14 +33,15 @@ class WebSocketService {
       _chatListener.messageStreamController.stream;
   Stream<Chat> get chatStream => _chatListener.chatStreamController.stream;
 
-  WebSocketService(this._botId, this._chatId, this._configuration) {
+  WebSocketService(this._botId, this._configuration) {
     _logger = GetIt.I<LogService>().logger;
-    _chatListener = _createChatListener();
   }
 
-  Future<void> connect(String token) async {
-    _logger?.i("Connecting to websocket service");
+  Future<void> connect(String token, String chatId) async {
+    _chatId = chatId;
+    _logger?.d("Connecting to websocket service");
     _asyngularWebsocketClient = _createAsyngularWebsocketClient();
+    _chatListener = _createChatListener();
     _firstEventSent = false;
 
     _socket = await _asyngularWebsocketClient.initSocket(token, _chatListener);
@@ -62,7 +63,7 @@ class WebSocketService {
   }
 
   Future<void> closeAsync({bool closeSocket = false}) async {
-    _logger?.i("Closing chat client socket");
+    _logger?.d("Closing chat client socket");
 
     sendCloseChatMessage();
 
@@ -72,7 +73,7 @@ class WebSocketService {
       _socket.closeWebsocket();
     }
 
-    await _chatListener.reinitStreamControllersr();
+    await _chatListener.reinitStreamControllers();
   }
 
   void sendTextMessage(String message, ButtonData? buttonData) {
@@ -167,6 +168,9 @@ class WebSocketService {
       _logger?.d("Emitting web_init event");
       _logger?.d(webInitData);
       _chatListener.emitEvent("request.chat", webInitData);
+      _logger?.d("Emitting refresh_messages event");
+      _chatListener.emitEvent("request.chat",
+          _getRefreshMessagesData()); // Make sure messages are refreshed if we are dealing with an already existing chat
       _firstEventSent = true;
     }
 
@@ -176,14 +180,11 @@ class WebSocketService {
       _logger?.d(
           "Button click detected, sending button click event for button id: ${buttonData.buttonId}, label: ${buttonData.label}");
       dynamic buttonClickData = _getButtonClickData(buttonData);
-      _logger?.d(buttonClickData);
       _chatListener.emitEvent("request.chat", buttonClickData);
     }
 
     dynamic publishData = _getPublishData(type, additionalData: additionalData);
 
-    _logger?.d("Emitting event");
-    _logger?.d(publishData);
 
     _chatListener.emitEvent("request.chat", publishData);
   }
@@ -235,7 +236,6 @@ class WebSocketService {
 
   dynamic _getWebInitEventData() {
     var id = const Uuid().v4();
-
     return {
       "clientId": _botId,
       "conversation": {},
@@ -247,6 +247,26 @@ class WebSocketService {
         "sender": "user",
         "timestamp": DateTime.now().fractionalSecond(),
         "type": "web_init",
+        "username": _chatId,
+      },
+      "id": id,
+      "event": "request.chat"
+    };
+  }
+
+  dynamic _getRefreshMessagesData() {
+    var id = const Uuid().v4();
+    return {
+      "clientId": _botId,
+      "conversation": {},
+      "data": {
+        "id": id,
+        "full_name": "Test Testsson", // TODO: Use real name
+        "chatId": _chatId,
+        "finished": true,
+        "sender": "user",
+        "timestamp": DateTime.now().fractionalSecond(),
+        "type": "refresh_messages",
         "username": _chatId,
       },
       "id": id,

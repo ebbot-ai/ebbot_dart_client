@@ -76,7 +76,7 @@ class EbbotChatListener extends BasicListener {
     messageStreamController.add(message);
   }
 
-  Future<void> reinitStreamControllersr() async {
+  Future<void> reinitStreamControllers() async {
     await messageStreamController.close();
     await chatStreamController.close();
     messageStreamController = StreamController<Message>.broadcast();
@@ -111,7 +111,6 @@ class EbbotChatListener extends BasicListener {
         switch (type) {
           case 'message':
             _logger?.i("Handling type: $type");
-            _logger?.d(item);
             var message = Message.fromJson(item);
             _onMessageCreated(message);
             break;

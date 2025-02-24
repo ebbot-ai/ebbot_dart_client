@@ -25,9 +25,6 @@ class EbbotDartClient {
 
   final String _botId;
   final Configuration _configuration;
-  final String _chatId =
-      "${DateTime.now().millisecondsSinceEpoch}-${const Uuid().v4()}";
-  String get chatId => _chatId;
 
   late EbbotHttpClient _ebbotHttpClient;
   late HttpSession _httpSession;
@@ -38,9 +35,9 @@ class EbbotDartClient {
   late FileUploadHttpClient _fileUploadHttpClient;
 
   WebSocketService get _webSocketService => GetIt.I<WebSocketService>();
-
   Stream<Message> get messageStream => _webSocketService.messageStream;
   Stream<Chat> get chatStream => _webSocketService.chatStream;
+  HttpSession get session => _httpSession;
 
   final List<Notification> _notifications = [];
   List<Notification> get notifications => _notifications;
@@ -55,7 +52,7 @@ class EbbotDartClient {
 
     if (!GetIt.I.isRegistered<WebSocketService>()) {
       GetIt.I.registerSingleton<WebSocketService>(
-          WebSocketService(_botId, _chatId, _configuration));
+          WebSocketService(_botId, _configuration));
     }
 
     _logger = GetIt.I<LogService>().logger;
@@ -65,11 +62,23 @@ class EbbotDartClient {
     _logger?.i("initialize");
 
     final environment = _configuration.environment;
+    final sessionConfig = _configuration.sessionConfiguration;
+
+    _logger?.i("Session config chat id: ${sessionConfig.chatId}");
+    // Either use the generated chatId or the one from the configuration to restore a previous session
+    String chatId =
+        "${DateTime.now().millisecondsSinceEpoch}-${const Uuid().v4()}";
+
+    if (sessionConfig.chatId != null) {
+      _logger?.i("Using chatId from session config: ${sessionConfig.chatId}");
+      chatId = sessionConfig.chatId!;
+    }
 
     _logger?.i("Fetching configuration from server");
     // Initialize the http client
+
     _ebbotHttpClient =
-        EbbotHttpClient(botId: _botId, chatId: _chatId, env: environment);
+        EbbotHttpClient(botId: _botId, chatId: chatId, env: environment);
 
     _chatConfig = await _ebbotHttpClient.fetchConfig();
     _logger?.i("Successfully fetched configuration from server");
@@ -85,11 +94,11 @@ class EbbotDartClient {
     }*/
 
     // Initalize the asyngular client
-    _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId, environment);
+    _asyngularHttpClient = AsyngularHttpClient(_botId, chatId, environment);
     _httpSession = await _asyngularHttpClient.initSession();
     _fileUploadHttpClient = FileUploadHttpClient(environment);
 
-    await _webSocketService.connect(_httpSession.data.token);
+    await _webSocketService.connect(_httpSession.data.token, chatId);
 
     // Hack to get the token from the web_init call
     _webSocketService.chatStream.listen(_onChatStreamMessage);
@@ -98,7 +107,8 @@ class EbbotDartClient {
   void _onChatStreamMessage(Chat chat) {
     // We only care about if the token has been received.
     // Its only used when uploading files for now
-    final String? token = chat.data?['token'];
+    //final String? token = chat.data?['token'];
+    final String? token = chat.data?.token;
     if (token != null) {
       _logger?.i("Received token from chat stream: $token");
       _fileUploadHttpClient.token = token;

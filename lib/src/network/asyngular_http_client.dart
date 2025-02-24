@@ -27,6 +27,7 @@ class AsyngularHttpClient extends BaseHttpClient {
   Future<HttpSession> initSession() async {
     final uri = getAPIUri("asyngular/init");
     final body = jsonEncode({"botId": _botId, "chatId": _chatId});
+
     logger?.i("Initializing session with uri $uri and body $body");
     final response = await http.post(uri, body: body, headers: ebbotAPIHeaders);
     logger?.i("Response from init session: ${response.body}");

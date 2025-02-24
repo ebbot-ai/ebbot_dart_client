@@ -34,7 +34,7 @@ Session _$SessionFromJson(Map<String, dynamic> json) => Session(
       botId: json['botId'] as String,
       chatId: json['chatId'] as String,
       session: json['session'] as String,
-      expires: json['expires'] as int,
+      expires: (json['expires'] as num).toInt(),
     );
 
 Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
