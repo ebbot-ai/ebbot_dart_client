@@ -27,8 +27,6 @@ class WebSocketService {
   get _messageStreamController => _chatListener.messageStreamController;
   get _chatStreamController => _chatListener.chatStreamController;
 
-  bool _firstEventSent = false;
-
   Stream<Message> get messageStream =>
       _chatListener.messageStreamController.stream;
   Stream<Chat> get chatStream => _chatListener.chatStreamController.stream;
@@ -42,10 +40,10 @@ class WebSocketService {
     _logger?.d("Connecting to websocket service");
     _asyngularWebsocketClient = _createAsyngularWebsocketClient();
     _chatListener = _createChatListener();
-    _firstEventSent = false;
 
     _socket = await _asyngularWebsocketClient.initSocket(token, _chatListener);
     await _chatListener.onSubscribed();
+    sendInitialMessagesToServer();
   }
 
   EbbotChatListener _createChatListener() {
@@ -60,6 +58,16 @@ class WebSocketService {
       _chatId,
       _configuration.environment,
     );
+  }
+
+  void sendInitialMessagesToServer() {
+    dynamic webInitData = _getWebInitEventData();
+    _logger?.d("Emitting web_init event");
+    _logger?.d(webInitData);
+    _chatListener.emitEvent("request.chat", webInitData);
+    _logger?.d("Emitting refresh_messages event");
+    _chatListener.emitEvent("request.chat",
+        _getRefreshMessagesData()); // Make sure messages are refreshed if we are dealing with an already existing chat
   }
 
   Future<void> closeAsync({bool closeSocket = false}) async {
@@ -162,18 +170,6 @@ class WebSocketService {
 
   void _emitChatEvent(String type,
       {ButtonData? buttonData, dynamic additionalData}) {
-    // If no events have been emitted before, send a web_init chat as well
-    if (!_firstEventSent) {
-      dynamic webInitData = _getWebInitEventData();
-      _logger?.d("Emitting web_init event");
-      _logger?.d(webInitData);
-      _chatListener.emitEvent("request.chat", webInitData);
-      _logger?.d("Emitting refresh_messages event");
-      _chatListener.emitEvent("request.chat",
-          _getRefreshMessagesData()); // Make sure messages are refreshed if we are dealing with an already existing chat
-      _firstEventSent = true;
-    }
-
     // If a button id has been passed, we need to emit a button clicked event before
     // we send the actual event
     if (buttonData != null) {
@@ -184,7 +180,6 @@ class WebSocketService {
     }
 
     dynamic publishData = _getPublishData(type, additionalData: additionalData);
-
 
     _chatListener.emitEvent("request.chat", publishData);
   }
