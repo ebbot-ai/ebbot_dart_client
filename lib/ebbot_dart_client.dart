@@ -126,9 +126,11 @@ class EbbotDartClient {
     }
   }
 
-  Future<void> closeAsync({bool closeSocket = false}) async {
+  Future<void> closeAsync({bool endSession = false}) async {
     await _webSocketService.closeAsync();
-    await _asyngularHttpClient.endSession();
+    if (endSession) {
+      await _asyngularHttpClient.endSession();
+    }
   }
 
   void sendTextMessage(String message, {ButtonData? buttonData}) {
@@ -143,8 +145,9 @@ class EbbotDartClient {
     _webSocketService.sendRatingMessage(rating, buttonData);
   }
 
-  void sendScenarioMessage(String scenario, {ButtonData? buttonData}) {
-    _webSocketService.sendScenarioMessage(scenario, buttonData);
+  void sendScenarioMessage(String scenario,
+      {String? state, ButtonData? buttonData}) {
+    _webSocketService.sendScenarioMessage(scenario, state, buttonData);
   }
 
   void sendVariableMessage(String name, String value,

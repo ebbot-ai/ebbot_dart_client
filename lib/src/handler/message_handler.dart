@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:socketcluster_client/socketcluster_client.dart';
 import 'package:uuid/uuid.dart';
 
+// TODO: Impmlement or throw away..
 class MessageHandler {
   final Socket _socket;
   final String _botId;
