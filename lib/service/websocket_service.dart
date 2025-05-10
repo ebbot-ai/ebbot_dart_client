@@ -6,6 +6,7 @@ import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/entity/fileupload/image_response.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
+import 'package:ebbot_dart_client/service/device_info_service.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/src/ebbot_chat_listener.dart';
 import 'package:ebbot_dart_client/src/network/asyngular_websocket_client.dart';
@@ -65,9 +66,11 @@ class WebSocketService {
     _logger?.d("Emitting web_init event");
     _logger?.d(webInitData);
     _chatListener.emitEvent("request.chat", webInitData);
-    _logger?.d("Emitting refresh_messages event");
-    _chatListener.emitEvent("request.chat",
-        _getRefreshMessagesData()); // Make sure messages are refreshed if we are dealing with an already existing chat
+    // Wait for a couple of seconds to make sure the server has time to process the web_init event
+    Timer(const Duration(seconds: 2), () {
+      _logger?.d("Emitting refresh_messages event");
+      _chatListener.emitEvent("request.chat", _getRefreshMessagesData());
+    });
   }
 
   Future<void> closeAsync({bool closeSocket = false}) async {
@@ -104,12 +107,16 @@ class WebSocketService {
         additionalData: additionalData, buttonData: buttonData);
   }
 
-  void sendScenarioMessage(String scenario, ButtonData? buttonData) {
+  void sendScenarioMessage(
+      String scenario, String? state, ButtonData? buttonData) {
+    Map<String, dynamic> additionalData = {
+      'value': {'scenario': scenario}
+    };
+    if (state != null) {
+      additionalData['value']['state'] = state;
+    }
     _emitChatEvent('scenario',
-        additionalData: {
-          'value': {'scenario': scenario}
-        },
-        buttonData: buttonData);
+        additionalData: additionalData, buttonData: buttonData);
   }
 
   void sendVariableMessage(String name, String value, ButtonData? buttonData) {
@@ -168,8 +175,8 @@ class WebSocketService {
     _chatListener.emitEvent("request.chat", imageData);
   }
 
-  void _emitChatEvent(String type,
-      {ButtonData? buttonData, dynamic additionalData}) {
+  Future<void> _emitChatEvent(String type,
+      {ButtonData? buttonData, dynamic additionalData}) async {
     // If a button id has been passed, we need to emit a button clicked event before
     // we send the actual event
     if (buttonData != null) {
@@ -179,18 +186,40 @@ class WebSocketService {
       _chatListener.emitEvent("request.chat", buttonClickData);
     }
 
-    dynamic publishData = _getPublishData(type, additionalData: additionalData);
+    dynamic publishData =
+        await _getPublishData(type, additionalData: additionalData);
 
     _chatListener.emitEvent("request.chat", publishData);
   }
 
   dynamic _getPublishData(String type,
       {Map<String, dynamic>? conversationData,
-      Map<String, dynamic>? additionalData}) {
+      Map<String, dynamic>? additionalData}) async {
     var id = const Uuid().v4();
+
+    conversationData ??= {};
+
+    if (additionalData?.containsKey('value') == true) {
+      conversationData = {
+        "user_last_input": additionalData!['value'],
+      };
+    }
+
+    // Append device info to conversation data
+    final deviceInfoService = DeviceInfoService();
+    final deviceInfo = await deviceInfoService.getDeviceInfo();
+
+    if (deviceInfo != null) {
+      conversationData["platform"] = deviceInfo.platform;
+      conversationData["device_name"] = deviceInfo.deviceName;
+      conversationData["device_model"] = deviceInfo.deviceModel;
+      conversationData["os"] = deviceInfo.os;
+      conversationData["os_version"] = deviceInfo.osVersion;
+    }
+
     return {
       "clientId": _botId,
-      "conversation": conversationData ?? {},
+      "conversation": conversationData,
       "data": {
         "id": id,
         "full_name": "Test Testsson", // TODO: Use real name
