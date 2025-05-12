@@ -76,8 +76,6 @@ class WebSocketService {
   Future<void> closeAsync({bool closeSocket = false}) async {
     _logger?.d("Closing chat client socket");
 
-    sendCloseChatMessage();
-
     if (closeSocket == true) {
       _logger?.i("Socket has been initialized, closing it");
       _socket.unsubscribe("request.chat");
