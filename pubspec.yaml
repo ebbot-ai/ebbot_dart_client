@@ -1,6 +1,6 @@
 name: ebbot_dart_client
 description: "The Ebbot dart client library."
-version: 0.1.9
+version: 0.2.0
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 homepage:
 
