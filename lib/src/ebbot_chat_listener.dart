@@ -45,6 +45,7 @@ class EbbotChatListener extends BasicListener {
   void emitEvent(String event, dynamic data) {
     if (_subscribe == null) {
       _logger?.w("Not subscribed, not emitting event");
+      return;
     }
 
     _subscribe?.emit(event, data);

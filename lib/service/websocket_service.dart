@@ -186,7 +186,7 @@ class WebSocketService {
 
     dynamic publishData =
         await _getPublishData(type, additionalData: additionalData);
-
+    
     _chatListener.emitEvent("request.chat", publishData);
   }
 

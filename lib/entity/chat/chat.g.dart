@@ -24,21 +24,23 @@ ChatData _$ChatDataFromJson(Map<String, dynamic> json) => ChatData(
       chat: json['chat'] == null
           ? null
           : ChatContent.fromJson(json['chat'] as Map<String, dynamic>),
+      token: json['token'] as String?,
     );
 
 Map<String, dynamic> _$ChatDataToJson(ChatData instance) => <String, dynamic>{
       'chat': instance.chat?.toJson(),
+      'token': instance.token,
     };
 
 ChatContent _$ChatContentFromJson(Map<String, dynamic> json) => ChatContent(
-      chatMessages: (json['chat_messages'] as List<dynamic>?)
+      chatMessages: (json['chatMessages'] as List<dynamic>?)
           ?.map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
 Map<String, dynamic> _$ChatContentToJson(ChatContent instance) =>
     <String, dynamic>{
-      'chat_messages': instance.chatMessages?.map((e) => e.toJson()).toList(),
+      'chatMessages': instance.chatMessages?.map((e) => e.toJson()).toList(),
     };
 
 ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) => ChatMessage(

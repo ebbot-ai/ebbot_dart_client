@@ -10,6 +10,9 @@ ChatConfig _$ChatConfigFromJson(Map<String, dynamic> json) => ChatConfig(
       chat_style:
           ChatStyle.fromJson(json['chat_style'] as Map<String, dynamic>),
       version: json['version'] as String,
+      bot_chat_styles: (json['bot_chat_styles'] as List<dynamic>)
+          .map((e) => BotChatStyles.fromJson(e as Map<String, dynamic>))
+          .toList(),
       scenario: Scenario.fromJson(json['scenario'] as Map<String, dynamic>),
     );
 
@@ -17,6 +20,7 @@ Map<String, dynamic> _$ChatConfigToJson(ChatConfig instance) =>
     <String, dynamic>{
       'chat_style': instance.chat_style,
       'version': instance.version,
+      'bot_chat_styles': instance.bot_chat_styles,
       'scenario': instance.scenario,
     };
 
@@ -217,7 +221,7 @@ Map<String, dynamic> _$FeaturesToJson(Features instance) => <String, dynamic>{
 BotChatStyles _$BotChatStylesFromJson(Map<String, dynamic> json) =>
     BotChatStyles(
       id: json['id'] as String,
-      path: json['path'],
+      path: json['path'] as String?,
       version: json['version'] as String,
       isDefault: json['isDefault'] as bool,
     );

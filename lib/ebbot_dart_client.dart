@@ -6,6 +6,7 @@ import 'package:ebbot_dart_client/configuration/configuration.dart';
 import 'package:ebbot_dart_client/entity/button_data/button_data.dart';
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
+import 'package:ebbot_dart_client/entity/chat_config/chat_style_v2_config.dart';
 import 'package:ebbot_dart_client/entity/fileupload/image_response.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
 import 'package:ebbot_dart_client/entity/notification/notification.dart';
@@ -31,13 +32,18 @@ class EbbotDartClient {
   // ignore: unused_field
   late Socket _socket;
   late ChatConfig _chatConfig;
+  late ChatStyleConfigV2?
+      _chatStyleConfig; // This might be null if no chat style config is available
   late AsyngularHttpClient _asyngularHttpClient;
   late FileUploadHttpClient _fileUploadHttpClient;
+
+  late String _chatId;
 
   WebSocketService get _webSocketService => GetIt.I<WebSocketService>();
   Stream<Message> get messageStream => _webSocketService.messageStream;
   Stream<Chat> get chatStream => _webSocketService.chatStream;
   HttpSession get session => _httpSession;
+  ChatStyleConfigV2? get chatStyleConfig => _chatStyleConfig;
 
   final List<Notification> _notifications = [];
   List<Notification> get notifications => _notifications;
@@ -58,50 +64,99 @@ class EbbotDartClient {
     _logger = GetIt.I<LogService>().logger;
   }
 
+  // Public init methods
+
   Future<void> initialize() async {
     _logger?.i("initialize");
 
-    final environment = _configuration.environment;
-    final sessionConfig = _configuration.sessionConfiguration;
+    _initChatId();
+    _initEbbotHttpClient();
+    await _initConfigs();
+    _handleChatStyleConfig();
+    _addInfoSectionNotification();
+    await _initializeHttpClients();
+  }
 
-    _logger?.i("Session config chat id: ${sessionConfig.chatId}");
-    // Either use the generated chatId or the one from the configuration to restore a previous session
-    String chatId =
-        "${DateTime.now().millisecondsSinceEpoch}-${const Uuid().v4()}";
-
-    if (sessionConfig.chatId != null) {
-      _logger?.i("Using chatId from session config: ${sessionConfig.chatId}");
-      chatId = sessionConfig.chatId!;
-    }
-
-    _logger?.i("Fetching configuration from server");
-    // Initialize the http client
-
-    _ebbotHttpClient =
-        EbbotHttpClient(botId: _botId, chatId: chatId, env: environment);
-
-    _chatConfig = await _ebbotHttpClient.fetchConfig();
-    _logger?.i("Successfully fetched configuration from server");
-
-    // Add any notifications to the list
-    // TODO: reactor this to separate class when i have the time
-    // TODO: Enable this when a fix is in place
-    /*if (_chatConfig.chat_style.v2.info_section_enabled &&
-        _chatConfig.chat_style.v2.info_section_in_conversation) {
-      var title = _chatConfig.chat_style.v2.info_section_title;
-      var text = _chatConfig.chat_style.v2.info_section_text;
-      _notifications.add(Notification(title, text, true));
-    }*/
-
-    // Initalize the asyngular client
-    _asyngularHttpClient = AsyngularHttpClient(_botId, chatId, environment);
-    _httpSession = await _asyngularHttpClient.initSession();
-    _fileUploadHttpClient = FileUploadHttpClient(environment);
-
-    await _webSocketService.connect(_httpSession.data.token, chatId);
+  // This method is used to initialize the WebSocket connection
+  // after the HTTP session has been initialized.
+  // the subsequent call would be the startReceive method
+  Future<void> initializeWebsocketConnection() async {
+    await _webSocketService.connect(_httpSession.data.token, _chatId);
 
     // Hack to get the token from the web_init call
     _webSocketService.chatStream.listen(_onChatStreamMessage);
+  }
+
+  // Private init methods
+
+  void _initChatId() {
+    final sessionConfig = _configuration.sessionConfiguration;
+    _chatId = "${DateTime.now().millisecondsSinceEpoch}-${const Uuid().v4()}";
+
+    if (sessionConfig.chatId != null) {
+      _logger?.i("Using chatId from session config: ${sessionConfig.chatId}");
+      _chatId = sessionConfig.chatId!;
+    }
+  }
+
+  void _initEbbotHttpClient() {
+    final environment = _configuration.environment;
+    _ebbotHttpClient = EbbotHttpClient(
+      botId: _botId,
+      chatId: _chatId,
+      env: environment,
+    );
+  }
+
+  Future<void> _initConfigs() async {
+    _logger?.i("Fetching configuration from server");
+
+    final (chatConfig, chatStyleConfig) = await _ebbotHttpClient.fetchConfigs();
+    _chatConfig = chatConfig;
+    _chatStyleConfig = chatStyleConfig;
+    _logger?.i("Successfully fetched configuration from server");
+  }
+
+  void _handleChatStyleConfig() {
+    if (_chatConfig.maybeGetChatStyleConfig() != null) {
+      _logger?.i("Chat style config: ${_chatConfig.chat_style}");
+    } else {
+      _logger?.w("No chat style config found in the fetched configuration");
+    }
+  }
+
+  void _addInfoSectionNotification() {
+    var style = _chatConfig.chat_style.v2;
+    String? title = style.info_section_title;
+    String? text = style.info_section_text;
+
+    if (_chatStyleConfig != null) {
+      if (_chatStyleConfig!.info_section_enabled &&
+          _chatStyleConfig!.info_section_in_conversation) {
+        title = _chatStyleConfig!.info_section_title;
+        text = _chatStyleConfig!.info_section_text;
+      } else {
+        title = null;
+        text = null;
+      }
+    }
+
+    if (style.info_section_enabled &&
+        style.info_section_in_conversation &&
+        title != null &&
+        text != null) {
+      _logger?.i("Adding info section notification: $title - $text");
+      _notifications.add(Notification(title, text, true));
+    } else {
+      _logger?.w("No info section notification found in the configuration");
+    }
+  }
+
+  Future<void> _initializeHttpClients() async {
+    final environment = _configuration.environment;
+    _asyngularHttpClient = AsyngularHttpClient(_botId, _chatId, environment);
+    _httpSession = await _asyngularHttpClient.initSession();
+    _fileUploadHttpClient = FileUploadHttpClient(environment);
   }
 
   void _onChatStreamMessage(Chat chat) {

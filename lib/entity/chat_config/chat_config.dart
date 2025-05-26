@@ -7,7 +7,7 @@ class ChatConfig {
   //@JsonKey(name: 'chat_style')
   final ChatStyle chat_style;
   final String version;
-  //final BotChatStyles botChatStyles;
+  final List<BotChatStyles> bot_chat_styles;
   //final Features features;
   //final List<String> CustomCss;
   final Scenario scenario;
@@ -17,7 +17,7 @@ class ChatConfig {
   ChatConfig({
     required this.chat_style,
     required this.version,
-    //required this.botChatStyles,
+    required this.bot_chat_styles,
     //required this.features,
     //required this.CustomCss,
     required this.scenario,
@@ -29,6 +29,12 @@ class ChatConfig {
       _$ChatConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChatConfigToJson(this);
+
+  /// Returns the default chat style ID if available, otherwise returns null.
+  String? maybeGetChatStyleConfig() {
+    final matches = bot_chat_styles.where((style) => style.isDefault);
+    return matches.isNotEmpty ? matches.first.id : null;
+  }
 }
 
 @JsonSerializable()
@@ -458,7 +464,7 @@ class Features {
 @JsonSerializable()
 class BotChatStyles {
   final String id;
-  final dynamic path; // You can change this type as per your requirement
+  final String? path;
   final String version;
   final bool isDefault;
 
