@@ -53,7 +53,20 @@ ChatStyleConfigV2 _$ChatStyleConfigV2FromJson(Map<String, dynamic> json) =>
       info_section_in_conversation:
           json['info_section_in_conversation'] as bool,
       start_page_footer: json['start_page_footer'] as String?,
-      avatar_enabled: json['avatar_enabled'] as String?,
+      avatar_enabled: json['avatar_enabled'] as bool?,
+      start_page_enabled: json['start_page_enabled'] as bool?,
+      regular_btn_background_color:
+          json['regular_btn_background_color'] as String,
+      regular_btn_text_color: json['regular_btn_text_color'] as String,
+      start_page_link_cards: (json['start_page_link_cards'] as List<dynamic>)
+          .map((e) => StartPageLinkCard.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      icon_plate_color: json['icon_plate_color'] as String,
+      icon_icon_color: json['icon_icon_color'] as String,
+      alert_time_window: json['alert_time_window'] == null
+          ? null
+          : TimeWindow.fromJson(
+              json['alert_time_window'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ChatStyleConfigV2ToJson(ChatStyleConfigV2 instance) =>
@@ -98,8 +111,16 @@ Map<String, dynamic> _$ChatStyleConfigV2ToJson(ChatStyleConfigV2 instance) =>
       'info_section_title': instance.info_section_title,
       'info_section_text': instance.info_section_text,
       'info_section_in_conversation': instance.info_section_in_conversation,
+      'regular_btn_background_color': instance.regular_btn_background_color,
+      'regular_btn_text_color': instance.regular_btn_text_color,
       'start_page_footer': instance.start_page_footer,
       'avatar_enabled': instance.avatar_enabled,
+      'start_page_enabled': instance.start_page_enabled,
+      'start_page_link_cards':
+          instance.start_page_link_cards.map((e) => e.toJson()).toList(),
+      'icon_plate_color': instance.icon_plate_color,
+      'icon_icon_color': instance.icon_icon_color,
+      'alert_time_window': instance.alert_time_window?.toJson(),
     };
 
 FontType _$FontTypeFromJson(Map<String, dynamic> json) => FontType(
@@ -163,4 +184,38 @@ Avatar _$AvatarFromJson(Map<String, dynamic> json) => Avatar(
 Map<String, dynamic> _$AvatarToJson(Avatar instance) => <String, dynamic>{
       'src': instance.src,
       'type': instance.type,
+    };
+
+StartPageLinkCard _$StartPageLinkCardFromJson(Map<String, dynamic> json) =>
+    StartPageLinkCard(
+      id: json['id'] as String,
+      url: json['url'] as String,
+      icon: json['icon'] as String,
+      text: json['text'] as String,
+      title: json['title'] as String,
+      scenario: json['scenario'] as String,
+      time_window:
+          TimeWindow.fromJson(json['time_window'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$StartPageLinkCardToJson(StartPageLinkCard instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'url': instance.url,
+      'icon': instance.icon,
+      'text': instance.text,
+      'title': instance.title,
+      'scenario': instance.scenario,
+      'time_window': instance.time_window,
+    };
+
+TimeWindow _$TimeWindowFromJson(Map<String, dynamic> json) => TimeWindow(
+      start: json['start'] as String,
+      end: json['end'] as String,
+    );
+
+Map<String, dynamic> _$TimeWindowToJson(TimeWindow instance) =>
+    <String, dynamic>{
+      'start': instance.start,
+      'end': instance.end,
     };

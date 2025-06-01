@@ -44,8 +44,15 @@ class ChatStyleConfigV2 {
   final String info_section_title;
   final String info_section_text;
   final bool info_section_in_conversation;
+  final String regular_btn_background_color;
+  final String regular_btn_text_color;
   final String? start_page_footer;
-  final String? avatar_enabled; // Missing in some configs
+  final bool? avatar_enabled; // Missing in some configs
+  final bool? start_page_enabled;
+  final List<StartPageLinkCard> start_page_link_cards;
+  final String icon_plate_color;
+  final String icon_icon_color;
+  final TimeWindow? alert_time_window;
 
   ChatStyleConfigV2({
     required this.logo,
@@ -90,6 +97,13 @@ class ChatStyleConfigV2 {
     required this.info_section_in_conversation,
     required this.start_page_footer,
     required this.avatar_enabled,
+    required this.start_page_enabled,
+    required this.regular_btn_background_color,
+    required this.regular_btn_text_color,
+    required this.start_page_link_cards,
+    required this.icon_plate_color,
+    required this.icon_icon_color,
+    this.alert_time_window,
   });
 
   factory ChatStyleConfigV2.fromJson(Map<String, dynamic> json) =>
@@ -171,4 +185,41 @@ class Avatar {
   Avatar({required this.src, required this.type});
   factory Avatar.fromJson(Map<String, dynamic> json) => _$AvatarFromJson(json);
   Map<String, dynamic> toJson() => _$AvatarToJson(this);
+}
+
+@JsonSerializable()
+class StartPageLinkCard {
+  final String id;
+  final String url;
+  final String icon;
+  final String text;
+  final String title;
+  final String scenario;
+  final TimeWindow time_window;
+
+  StartPageLinkCard({
+    required this.id,
+    required this.url,
+    required this.icon,
+    required this.text,
+    required this.title,
+    required this.scenario,
+    required this.time_window,
+  });
+  factory StartPageLinkCard.fromJson(Map<String, dynamic> json) =>
+      _$StartPageLinkCardFromJson(json);
+  Map<String, dynamic> toJson() => _$StartPageLinkCardToJson(this);
+}
+
+@JsonSerializable()
+class TimeWindow {
+  final String start;
+  final String end;
+
+  TimeWindow({required this.start, required this.end});
+
+  factory TimeWindow.fromJson(Map<String, dynamic> json) =>
+      _$TimeWindowFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TimeWindowToJson(this);
 }
