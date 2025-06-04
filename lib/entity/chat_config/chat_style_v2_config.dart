@@ -53,6 +53,7 @@ class ChatStyleConfigV2 {
   final String icon_plate_color;
   final String icon_icon_color;
   final TimeWindow? alert_time_window;
+  final String message_dots_color;
 
   ChatStyleConfigV2({
     required this.logo,
@@ -103,6 +104,7 @@ class ChatStyleConfigV2 {
     required this.start_page_link_cards,
     required this.icon_plate_color,
     required this.icon_icon_color,
+    required this.message_dots_color,
     this.alert_time_window,
   });
 

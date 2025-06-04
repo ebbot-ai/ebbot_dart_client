@@ -9,7 +9,6 @@ import 'package:ebbot_dart_client/entity/chat_config/chat_config.dart';
 import 'package:ebbot_dart_client/entity/chat_config/chat_style_v2_config.dart';
 import 'package:ebbot_dart_client/entity/fileupload/image_response.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
-import 'package:ebbot_dart_client/entity/notification/notification.dart';
 import 'package:ebbot_dart_client/entity/session/session_init.dart';
 import 'package:ebbot_dart_client/service/log_service.dart';
 import 'package:ebbot_dart_client/service/websocket_service.dart';
@@ -45,9 +44,6 @@ class EbbotDartClient {
   HttpSession get session => _httpSession;
   ChatStyleConfigV2? get chatStyleConfig => _chatStyleConfig;
 
-  final List<Notification> _notifications = [];
-  List<Notification> get notifications => _notifications;
-
   EbbotDartClient(this._botId, this._configuration) {
     if (!GetIt.I.isRegistered<Configuration>()) {
       GetIt.I.registerSingleton<Configuration>(_configuration);
@@ -73,7 +69,6 @@ class EbbotDartClient {
     _initEbbotHttpClient();
     await _initConfigs();
     _handleChatStyleConfig();
-    _addInfoSectionNotification();
     await _initializeHttpClients();
   }
 
@@ -122,33 +117,6 @@ class EbbotDartClient {
       _logger?.i("Chat style config: ${_chatConfig.chat_style}");
     } else {
       _logger?.w("No chat style config found in the fetched configuration");
-    }
-  }
-
-  void _addInfoSectionNotification() {
-    var style = _chatConfig.chat_style.v2;
-    String? title = style.info_section_title;
-    String? text = style.info_section_text;
-
-    if (_chatStyleConfig != null) {
-      if (_chatStyleConfig!.info_section_enabled &&
-          _chatStyleConfig!.info_section_in_conversation) {
-        title = _chatStyleConfig!.info_section_title;
-        text = _chatStyleConfig!.info_section_text;
-      } else {
-        title = null;
-        text = null;
-      }
-    }
-
-    if (style.info_section_enabled &&
-        style.info_section_in_conversation &&
-        title != null &&
-        text != null) {
-      _logger?.i("Adding info section notification: $title - $text");
-      _notifications.add(Notification(title, text, true));
-    } else {
-      _logger?.w("No info section notification found in the configuration");
     }
   }
 

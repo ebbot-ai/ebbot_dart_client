@@ -63,6 +63,7 @@ ChatStyleConfigV2 _$ChatStyleConfigV2FromJson(Map<String, dynamic> json) =>
           .toList(),
       icon_plate_color: json['icon_plate_color'] as String,
       icon_icon_color: json['icon_icon_color'] as String,
+      message_dots_color: json['message_dots_color'] as String,
       alert_time_window: json['alert_time_window'] == null
           ? null
           : TimeWindow.fromJson(
@@ -121,6 +122,7 @@ Map<String, dynamic> _$ChatStyleConfigV2ToJson(ChatStyleConfigV2 instance) =>
       'icon_plate_color': instance.icon_plate_color,
       'icon_icon_color': instance.icon_icon_color,
       'alert_time_window': instance.alert_time_window?.toJson(),
+      'message_dots_color': instance.message_dots_color,
     };
 
 FontType _$FontTypeFromJson(Map<String, dynamic> json) => FontType(
