@@ -54,6 +54,8 @@ class ChatStyleConfigV2 {
   final String icon_icon_color;
   final TimeWindow? alert_time_window;
   final String message_dots_color;
+  final String btn_clicked_text_color;
+  final String btn_clicked_background_color;
 
   ChatStyleConfigV2({
     required this.logo,
@@ -105,6 +107,8 @@ class ChatStyleConfigV2 {
     required this.icon_plate_color,
     required this.icon_icon_color,
     required this.message_dots_color,
+    required this.btn_clicked_text_color,
+    required this.btn_clicked_background_color,
     this.alert_time_window,
   });
 
