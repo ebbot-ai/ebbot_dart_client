@@ -33,14 +33,14 @@ Map<String, dynamic> _$ChatDataToJson(ChatData instance) => <String, dynamic>{
     };
 
 ChatContent _$ChatContentFromJson(Map<String, dynamic> json) => ChatContent(
-      chatMessages: (json['chatMessages'] as List<dynamic>?)
+      chat_messages: (json['chat_messages'] as List<dynamic>?)
           ?.map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
 Map<String, dynamic> _$ChatContentToJson(ChatContent instance) =>
     <String, dynamic>{
-      'chatMessages': instance.chatMessages?.map((e) => e.toJson()).toList(),
+      'chat_messages': instance.chat_messages?.map((e) => e.toJson()).toList(),
     };
 
 ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) => ChatMessage(

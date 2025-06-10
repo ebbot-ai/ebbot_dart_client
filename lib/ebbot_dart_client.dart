@@ -77,7 +77,6 @@ class EbbotDartClient {
   // the subsequent call would be the startReceive method
   Future<void> initializeWebsocketConnection() async {
     await _webSocketService.connect(_httpSession.data.token, _chatId);
-
     // Hack to get the token from the web_init call
     _webSocketService.chatStream.listen(_onChatStreamMessage);
   }
@@ -130,10 +129,8 @@ class EbbotDartClient {
   void _onChatStreamMessage(Chat chat) {
     // We only care about if the token has been received.
     // Its only used when uploading files for now
-    //final String? token = chat.data?['token'];
     final String? token = chat.data?.token;
     if (token != null) {
-      _logger?.i("Received token from chat stream: $token");
       _fileUploadHttpClient.token = token;
     }
   }
@@ -143,7 +140,8 @@ class EbbotDartClient {
     var answers = _chatConfig.scenario.answers;
 
     for (var answer in answers) {
-      // This is somewhat a hack to emulate that the bot is in fact sending a message
+      // TODO: Fix this when i have figured out message deduplication
+      // This is a hack to render config "answers" as chat messages
       _logger?.i("dispatching answer: ${answer.value}");
       _webSocketService.sendBotMessageFromAnswer(answer);
     }
