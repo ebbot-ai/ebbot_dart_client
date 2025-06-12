@@ -43,7 +43,7 @@ class WebSocketService {
     _chatListener = _createChatListener();
 
     _socket = await _asyngularWebsocketClient.initSocket(token, _chatListener);
-    await _chatListener.onSubscribed();
+    await _chatListener.onWaitForSubscribed();
     sendInitialMessagesToServer();
   }
 
@@ -67,7 +67,7 @@ class WebSocketService {
     _logger?.d(webInitData);
     _chatListener.emitEvent("request.chat", webInitData);
     // Wait for a couple of seconds to make sure the server has time to process the web_init event
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 1), () {
       _logger?.d("Emitting refresh_messages event");
       _chatListener.emitEvent("request.chat", _getRefreshMessagesData());
     });
@@ -186,7 +186,7 @@ class WebSocketService {
 
     dynamic publishData =
         await _getPublishData(type, additionalData: additionalData);
-    
+
     _chatListener.emitEvent("request.chat", publishData);
   }
 

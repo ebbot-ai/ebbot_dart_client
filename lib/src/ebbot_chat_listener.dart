@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
@@ -27,7 +28,7 @@ class EbbotChatListener extends BasicListener {
 
   EbbotChatListener(this._chatId);
 
-  Future<void> onSubscribed() async {
+  Future<void> onWaitForSubscribed() async {
     Completer<void> completer = Completer<void>();
 
     Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -47,7 +48,7 @@ class EbbotChatListener extends BasicListener {
       _logger?.w("Not subscribed, not emitting event");
       return;
     }
-
+    _logger?.i("Emitting event: $event with data: $data");
     _subscribe?.emit(event, data);
   }
 
@@ -103,7 +104,7 @@ class EbbotChatListener extends BasicListener {
 
     _subscribe?.onSubscribe(subscriptionId, (name, data) {
       _logger?.i(
-          "subscribe.onSubscribe: subscription ID: $subscriptionId name: $name data length: ${data.length}");
+          "Received message for subscription ID: $subscriptionId name: $name data length: ${data.length}");
 
       // Deserialize the data to either Chat or Message depending on $data['type']
       // data is an array of messages or chats
