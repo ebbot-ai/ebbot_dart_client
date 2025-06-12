@@ -142,7 +142,8 @@ class EbbotDartClient {
     for (var answer in answers) {
       // TODO: Fix this when i have figured out message deduplication
       // This is a hack to render config "answers" as chat messages
-      _logger?.i("dispatching answer: ${answer.value}");
+      _logger?.i(
+          "dispatching initial chat messages from configuration: ${answer.value}");
       _webSocketService.sendBotMessageFromAnswer(answer);
     }
   }

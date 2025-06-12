@@ -38,9 +38,13 @@ class ChatData {
 @JsonSerializable(explicitToJson: true)
 class ChatContent {
   final List<ChatMessage>? chat_messages;
+  final String? handled_by;
+  final String? user_profile_picture;
 
   ChatContent({
     this.chat_messages,
+    this.handled_by,
+    this.user_profile_picture,
   });
 
   factory ChatContent.fromJson(Map<String, dynamic> json) =>
