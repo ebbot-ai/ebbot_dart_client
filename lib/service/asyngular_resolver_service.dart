@@ -6,7 +6,7 @@ class AsyngularResolverService {
     Environment.googleEUProduction: 'v2.ebbot.app',
     Environment.googleCanadaProduction: 'ca.ebbot.app',
     Environment.release: 'release.ebbot.app',
-    Environment.staging: 'staging.ebbot.app'
+    Environment.staging: 'staging.ebbot.eu'
   };
 
   // resolve the URL
