@@ -37,10 +37,18 @@ class ChatData {
 
 @JsonSerializable(explicitToJson: true)
 class ChatContent {
-  final List<ChatMessage>? chatMessages;
+  final List<ChatMessage>? chat_messages;
+  final String? handled_by;
+  final String? user_profile_picture;
+  final String? type;
+  final String? status;
 
   ChatContent({
-    this.chatMessages,
+    this.chat_messages,
+    this.handled_by,
+    this.user_profile_picture,
+    this.type,
+    this.status,
   });
 
   factory ChatContent.fromJson(Map<String, dynamic> json) =>
@@ -49,7 +57,7 @@ class ChatContent {
   Map<String, dynamic> toJson() => _$ChatContentToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class ChatMessage {
   final String? id;
   final String? sender;
