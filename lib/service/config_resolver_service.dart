@@ -8,7 +8,8 @@ class ConfigResolverService {
         'https://ebbot-v2.storage.googleapis.com/configs/',
     Environment.googleCanadaProduction:
         'https://ebbot-ca.storage.googleapis.com/configs/',
-    Environment.staging: 'https://storage.gra.cloud.ovh.net/v1/AUTH_8f9eec18dd5a496ea2fae844626938b6/staging/configs'
+    Environment.staging:
+        'https://storage.gra.cloud.ovh.net/v1/AUTH_8f9eec18dd5a496ea2fae844626938b6/staging/configs/'
   };
 
   // Function to get the appropriate URL based on environment
