@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:ebbot_dart_client/entity/chat/chat.dart';
 import 'package:ebbot_dart_client/entity/message/message.dart';
@@ -104,10 +103,15 @@ class EbbotChatListener extends BasicListener {
 
     _subscribe?.onSubscribe(subscriptionId, (name, data) {
       _logger?.i(
-          "Received message for subscription ID: $subscriptionId name: $name data length: ${data.length}");
+          "Received message for subscription ID: $subscriptionId name: $name data length: ${data?.length ?? 'null'}");
 
       // Deserialize the data to either Chat or Message depending on $data['type']
       // data is an array of messages or chats
+      if (data == null) {
+        _logger?.w("Received null data for subscription ID: $subscriptionId");
+        return;
+      }
+      
       for (var item in data) {
         final type = item['type'];
         switch (type) {
