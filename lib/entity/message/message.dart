@@ -6,7 +6,7 @@ part 'message.g.dart';
 class Message {
   final String type;
   final MessageData data;
-  final String requestId;
+  final String? requestId;
 
   Message({
     required this.type,
@@ -38,10 +38,10 @@ class MessageContent {
       id; // ID can be omitted if the type is button_click for some reason..
   final String botId;
   final String chatId;
-  final String companyId;
+  final String? companyId;
   final String sender;
   final dynamic value;
-  final String timestamp;
+  final String? timestamp;
   final String? input_field; // Can be "visible", "hidden", "disabled" or null
   // type: gpt, url, etc (it will affect the data structure of value)
   final String type;
