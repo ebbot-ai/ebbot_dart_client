@@ -38,7 +38,7 @@ class MessageContent {
       id; // ID can be omitted if the type is button_click for some reason..
   final String botId;
   final String chatId;
-  //final String companyId;
+  final String? companyId;
   final String sender;
   final dynamic value;
   final String? timestamp;
@@ -51,7 +51,7 @@ class MessageContent {
     required this.id,
     required this.botId,
     required this.chatId,
-    //required this.companyId,
+    required this.companyId,
     required this.sender,
     required this.value,
     required this.timestamp,
